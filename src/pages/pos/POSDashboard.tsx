@@ -131,6 +131,7 @@ const POSDashboard = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [customTransactionDate, setCustomTransactionDate] = useState<Date | undefined>(undefined);
   
   // Customer info
   const [customerName, setCustomerName] = useState('');
