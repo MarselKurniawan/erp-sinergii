@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Building2, Shield, Factory, Store, Briefcase, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Shield, Factory, Store, Briefcase, Loader2, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { PasswordConfirmDialog } from '@/components/PasswordConfirmDialog';
+import { DataResetDialog } from '@/components/settings/DataResetDialog';
 import { getDefaultCOA, businessTypeLabels, type BusinessType } from '@/lib/defaultCOA';
 import { Badge } from '@/components/ui/badge';
 
@@ -59,6 +60,7 @@ const Companies: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState(initialFormData);
   const [saving, setSaving] = useState(false);
@@ -311,14 +313,28 @@ const Companies: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => openEditDialog(company)}
+                          title="Edit"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950"
+                          onClick={() => {
+                            setSelectedCompany(company);
+                            setResetDialogOpen(true);
+                          }}
+                          title="Reset Data"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           onClick={() => confirmDelete(company)}
+                          title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -471,6 +487,13 @@ const Companies: React.FC = () => {
         title="Delete Company?"
         description={`Are you sure you want to delete "${selectedCompany?.name}"? This action cannot be undone and will fail if the company has related data.`}
         onConfirm={handleDelete}
+      />
+
+      {/* Data Reset Dialog */}
+      <DataResetDialog
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        company={selectedCompany}
       />
     </div>
   );
