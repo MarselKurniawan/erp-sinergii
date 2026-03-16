@@ -14,10 +14,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { Minus, Plus, ShoppingCart, Trash2, Receipt, Search, Maximize, Minimize, Pause, Play, Printer, User, ChefHat, Tag, X, RotateCcw } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Trash2, Receipt, Search, Maximize, Minimize, Pause, Play, Printer, User, ChefHat, Tag, X, RotateCcw, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { format } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { id } from 'date-fns/locale';
 
 interface Customer {
