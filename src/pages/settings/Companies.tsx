@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { PasswordConfirmDialog } from '@/components/PasswordConfirmDialog';
+import { DataResetDialog } from '@/components/settings/DataResetDialog';
 import { getDefaultCOA, businessTypeLabels, type BusinessType } from '@/lib/defaultCOA';
 import { Badge } from '@/components/ui/badge';
 
