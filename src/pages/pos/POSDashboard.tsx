@@ -14,10 +14,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { Minus, Plus, ShoppingCart, Trash2, Receipt, Search, Maximize, Minimize, Pause, Play, Printer, User, ChefHat, Tag, X, RotateCcw } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Trash2, Receipt, Search, Maximize, Minimize, Pause, Play, Printer, User, ChefHat, Tag, X, RotateCcw, CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { format } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { id } from 'date-fns/locale';
 
 interface Customer {
@@ -127,6 +131,7 @@ const POSDashboard = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [payments, setPayments] = useState<PaymentEntry[]>([]);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [customTransactionDate, setCustomTransactionDate] = useState<Date | undefined>(undefined);
   
   // Customer info
   const [customerName, setCustomerName] = useState('');
@@ -543,6 +548,7 @@ const POSDashboard = () => {
       return;
     }
     setPayments([]);
+    setCustomTransactionDate(undefined);
     setShowPaymentDialog(true);
   };
 
@@ -587,6 +593,7 @@ const POSDashboard = () => {
           company_id: selectedCompany.id,
           transaction_number: transactionNumber,
           invoice_number: invoiceNumber,
+          transaction_date: customTransactionDate ? format(customTransactionDate, 'yyyy-MM-dd') : new Date().toISOString().slice(0, 10),
           subtotal: subtotal,
           tax_amount: totalTax,
           total_amount: grandTotal,
@@ -645,6 +652,7 @@ const POSDashboard = () => {
         .insert({
           company_id: selectedCompany.id,
           entry_number: journalNumber,
+          entry_date: customTransactionDate ? format(customTransactionDate, 'yyyy-MM-dd') : new Date().toISOString().slice(0, 10),
           description: `Penjualan POS ${transactionNumber} - ${displayCustomerName}`,
           reference_type: 'pos_transaction',
           reference_id: transaction.id,
@@ -1604,6 +1612,46 @@ const POSDashboard = () => {
               <div className="text-center py-4 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Tagihan</p>
                 <p className="text-3xl font-bold">{formatCurrency(grandTotal)}</p>
+              </div>
+
+              {/* Custom Transaction Date */}
+              <div className="space-y-2">
+                <Label>Tanggal Transaksi</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !customTransactionDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {customTransactionDate
+                        ? format(customTransactionDate, 'dd MMMM yyyy', { locale: idLocale })
+                        : 'Hari ini (default)'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={customTransactionDate}
+                      onSelect={setCustomTransactionDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {customTransactionDate && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-6 px-2"
+                    onClick={() => setCustomTransactionDate(undefined)}
+                  >
+                    <X className="w-3 h-3 mr-1" /> Reset ke hari ini
+                  </Button>
+                )}
               </div>
 
               {/* Payment Methods */}
