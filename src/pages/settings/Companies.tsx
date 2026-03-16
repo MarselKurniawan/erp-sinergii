@@ -313,14 +313,28 @@ const Companies: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => openEditDialog(company)}
+                          title="Edit"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950"
+                          onClick={() => {
+                            setSelectedCompany(company);
+                            setResetDialogOpen(true);
+                          }}
+                          title="Reset Data"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           onClick={() => confirmDelete(company)}
+                          title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
