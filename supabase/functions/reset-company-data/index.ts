@@ -346,7 +346,7 @@ Deno.serve(async (req) => {
       const tables: string[] = [];
       let total = 0;
 
-      let count = await deleteWithSubquery("stock_opname_items", "stock_opname_id", "stock_opname", { company_id });
+      let count = await deleteWithSubquery("stock_opname_items", "opname_id", "stock_opname", { company_id });
       if (count > 0) { total += count; tables.push("stock_opname_items"); }
 
       count = await deleteFromTable("stock_opname", { company_id });
