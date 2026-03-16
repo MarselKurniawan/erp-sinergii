@@ -548,6 +548,7 @@ const POSDashboard = () => {
       return;
     }
     setPayments([]);
+    setCustomTransactionDate(undefined);
     setShowPaymentDialog(true);
   };
 
