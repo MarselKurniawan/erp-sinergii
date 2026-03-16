@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Building2, Shield, Factory, Store, Briefcase, Loader2, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Shield, Factory, Store, Briefcase, Loader2, RotateCcw, BookOpen, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,6 +64,8 @@ const Companies: React.FC = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [formData, setFormData] = useState(initialFormData);
   const [saving, setSaving] = useState(false);
+  const [coaStatus, setCoaStatus] = useState<Record<string, number>>({});
+  const [generatingCOA, setGeneratingCOA] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAdmin) {
@@ -79,13 +81,35 @@ const Companies: React.FC = () => {
         .order('name');
 
       if (error) throw error;
-      setCompanies((data || []) as Company[]);
+      const companiesList = (data || []) as Company[];
+      setCompanies(companiesList);
+
+      // Check COA status for all companies
+      await checkCoaStatus(companiesList);
     } catch (error) {
       console.error('Error fetching companies:', error);
       toast.error('Failed to load companies');
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkCoaStatus = async (companiesList: Company[]) => {
+    const status: Record<string, number> = {};
+    
+    // Batch check: get count of COA per company
+    for (const company of companiesList) {
+      const { count, error } = await supabase
+        .from('chart_of_accounts')
+        .select('id', { count: 'exact', head: true })
+        .eq('company_id', company.id);
+
+      if (!error) {
+        status[company.id] = count || 0;
+      }
+    }
+    
+    setCoaStatus(status);
   };
 
   const openEditDialog = (company: Company) => {
@@ -130,6 +154,107 @@ const Companies: React.FC = () => {
     }
 
     return true;
+  };
+
+  const handleGenerateCOA = async (company: Company) => {
+    const businessType = company.business_type || 'trading';
+    setGeneratingCOA(company.id);
+
+    try {
+      // Check if COA already exists
+      const existingCount = coaStatus[company.id] || 0;
+      
+      if (existingCount > 0) {
+        // Delete existing COA first, then regenerate
+        const { error: deleteError } = await supabase
+          .from('chart_of_accounts')
+          .delete()
+          .eq('company_id', company.id);
+        
+        if (deleteError) {
+          // If can't delete (FK constraints), just insert missing ones
+          toast.error('Tidak bisa reset COA karena ada data terkait. Menambahkan akun yang belum ada...');
+          await addMissingCOA(company.id, businessType);
+          await checkCoaStatus(companies);
+          setGeneratingCOA(null);
+          return;
+        }
+      }
+
+      await generateDefaultCOA(company.id, businessType);
+      toast.success(`COA template ${businessTypeLabels[businessType].label} berhasil dibuat untuk ${company.name}`);
+      
+      // Refresh COA status
+      await checkCoaStatus(companies);
+    } catch (error: any) {
+      console.error('Error generating COA:', error);
+      toast.error(error.message || 'Gagal membuat COA');
+    } finally {
+      setGeneratingCOA(null);
+    }
+  };
+
+  const addMissingCOA = async (companyId: string, businessType: BusinessType) => {
+    const defaultAccounts = getDefaultCOA(businessType);
+    
+    // Get existing codes
+    const { data: existing } = await supabase
+      .from('chart_of_accounts')
+      .select('code')
+      .eq('company_id', companyId);
+
+    const existingCodes = new Set((existing || []).map(a => a.code));
+    
+    const missingAccounts = defaultAccounts
+      .filter(acc => !existingCodes.has(acc.code))
+      .map(acc => ({
+        company_id: companyId,
+        code: acc.code,
+        name: acc.name,
+        account_type: acc.account_type,
+        is_active: true,
+        balance: 0,
+      }));
+
+    if (missingAccounts.length === 0) {
+      toast.info('Semua akun COA sudah lengkap');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('chart_of_accounts')
+      .insert(missingAccounts);
+
+    if (error) throw error;
+
+    toast.success(`${missingAccounts.length} akun COA berhasil ditambahkan`);
+  };
+
+  const handleGenerateAllMissing = async () => {
+    const companiesWithoutCOA = companies.filter(c => (coaStatus[c.id] || 0) === 0);
+    
+    if (companiesWithoutCOA.length === 0) {
+      toast.info('Semua company sudah memiliki COA');
+      return;
+    }
+
+    setGeneratingCOA('all');
+    let successCount = 0;
+
+    try {
+      for (const company of companiesWithoutCOA) {
+        const businessType = company.business_type || 'trading';
+        await generateDefaultCOA(company.id, businessType);
+        successCount++;
+      }
+      
+      toast.success(`COA berhasil dibuat untuk ${successCount} company`);
+      await checkCoaStatus(companies);
+    } catch (error: any) {
+      toast.error(`Gagal: ${error.message}. Berhasil ${successCount} dari ${companiesWithoutCOA.length}`);
+    } finally {
+      setGeneratingCOA(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,6 +369,8 @@ const Companies: React.FC = () => {
     );
   };
 
+  const companiesWithoutCOA = companies.filter(c => (coaStatus[c.id] || 0) === 0);
+
   if (!isAdmin) {
     return (
       <div className="p-6">
@@ -273,6 +400,37 @@ const Companies: React.FC = () => {
         </Button>
       </div>
 
+      {/* COA Missing Alert */}
+      {!loading && companiesWithoutCOA.length > 0 && (
+        <Card className="border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30">
+          <CardContent className="py-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-amber-800 dark:text-amber-200">
+                  {companiesWithoutCOA.length} company belum memiliki Chart of Accounts
+                </p>
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  {companiesWithoutCOA.map(c => c.name).join(', ')}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleGenerateAllMissing}
+              disabled={generatingCOA === 'all'}
+              className="flex-shrink-0"
+            >
+              {generatingCOA === 'all' ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+              ) : (
+                <><BookOpen className="w-4 h-4 mr-2" /> Generate Semua COA</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -294,6 +452,7 @@ const Companies: React.FC = () => {
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Business Type</TableHead>
+                  <TableHead>COA</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -305,6 +464,18 @@ const Companies: React.FC = () => {
                     <TableCell className="font-mono font-medium">{company.code}</TableCell>
                     <TableCell className="font-medium">{company.name}</TableCell>
                     <TableCell>{getBusinessTypeBadge(company.business_type)}</TableCell>
+                    <TableCell>
+                      {(coaStatus[company.id] || 0) > 0 ? (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          {coaStatus[company.id]} akun
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-xs">
+                          Belum ada
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{company.email || '-'}</TableCell>
                     <TableCell>{company.phone || '-'}</TableCell>
                     <TableCell className="text-right">
@@ -316,6 +487,20 @@ const Companies: React.FC = () => {
                           title="Edit"
                         >
                           <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950"
+                          onClick={() => handleGenerateCOA(company)}
+                          disabled={generatingCOA === company.id}
+                          title={(coaStatus[company.id] || 0) > 0 ? 'Regenerate / Lengkapi COA' : 'Generate COA'}
+                        >
+                          {generatingCOA === company.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <BookOpen className="w-4 h-4" />
+                          )}
                         </Button>
                         <Button
                           variant="outline"
