@@ -652,6 +652,7 @@ const POSDashboard = () => {
         .insert({
           company_id: selectedCompany.id,
           entry_number: journalNumber,
+          entry_date: customTransactionDate ? format(customTransactionDate, 'yyyy-MM-dd') : new Date().toISOString().slice(0, 10),
           description: `Penjualan POS ${transactionNumber} - ${displayCustomerName}`,
           reference_type: 'pos_transaction',
           reference_id: transaction.id,
