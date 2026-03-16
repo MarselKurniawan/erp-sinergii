@@ -593,6 +593,7 @@ const POSDashboard = () => {
           company_id: selectedCompany.id,
           transaction_number: transactionNumber,
           invoice_number: invoiceNumber,
+          transaction_date: customTransactionDate ? format(customTransactionDate, 'yyyy-MM-dd') : new Date().toISOString().slice(0, 10),
           subtotal: subtotal,
           tax_amount: totalTax,
           total_amount: grandTotal,
