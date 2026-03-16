@@ -1614,6 +1614,46 @@ const POSDashboard = () => {
                 <p className="text-3xl font-bold">{formatCurrency(grandTotal)}</p>
               </div>
 
+              {/* Custom Transaction Date */}
+              <div className="space-y-2">
+                <Label>Tanggal Transaksi</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !customTransactionDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {customTransactionDate
+                        ? format(customTransactionDate, 'dd MMMM yyyy', { locale: idLocale })
+                        : 'Hari ini (default)'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={customTransactionDate}
+                      onSelect={setCustomTransactionDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {customTransactionDate && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-6 px-2"
+                    onClick={() => setCustomTransactionDate(undefined)}
+                  >
+                    <X className="w-3 h-3 mr-1" /> Reset ke hari ini
+                  </Button>
+                )}
+              </div>
+
               {/* Payment Methods */}
               <div className="space-y-2">
                 <Label>Pilih Metode Pembayaran</Label>
