@@ -488,6 +488,13 @@ const Companies: React.FC = () => {
         description={`Are you sure you want to delete "${selectedCompany?.name}"? This action cannot be undone and will fail if the company has related data.`}
         onConfirm={handleDelete}
       />
+
+      {/* Data Reset Dialog */}
+      <DataResetDialog
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        company={selectedCompany}
+      />
     </div>
   );
 };
