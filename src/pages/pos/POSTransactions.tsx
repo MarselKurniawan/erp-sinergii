@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Search, Eye, Printer, FileSpreadsheet, FileText, ChevronDown, ChefHat, Receipt } from 'lucide-react';
+import { Search, Eye, Printer, FileSpreadsheet, FileText, ChevronDown, ChefHat, Receipt, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { exportToExcel, exportToPDF, generatePDFTable } from '@/lib/exportUtils';
 
