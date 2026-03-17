@@ -644,7 +644,7 @@ const POSTransactions = () => {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
-                              <Printer className="h-4 w-4" />
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -666,6 +666,22 @@ const POSTransactions = () => {
                               <Printer className="h-4 w-4 mr-2" />
                               Cetak Semua
                             </DropdownMenuItem>
+                            {canEditDelete && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleOpenEdit(transaction)}>
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit Transaksi
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => setDeleteTransaction(transaction)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Hapus Transaksi
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
