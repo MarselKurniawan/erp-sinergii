@@ -146,6 +146,12 @@ export const BalanceSheet: React.FC = () => {
   const totalEquity = totalEquityAccounts + retainedEarnings;
   const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
 
+  const exportMeta = {
+    companyName: selectedCompany?.name || '',
+    reportTitle: 'Balance Sheet',
+    dateLabel: `Per tanggal: ${asOfDate}`,
+  };
+
   const handleExportCSV = () => {
     const data = [
       ...cashBankAccounts.map(a => ({ Category: 'Cash & Bank', Code: a.code, Account: a.name, Balance: a.balance })),
@@ -154,7 +160,7 @@ export const BalanceSheet: React.FC = () => {
       ...equityAccounts.map(a => ({ Category: 'Equity', Code: a.code, Account: a.name, Balance: a.balance })),
       { Category: 'Equity', Code: 'RE', Account: 'Retained Earnings', Balance: retainedEarnings },
     ];
-    exportToCSV(data, `balance-sheet-${asOfDate}`);
+    exportToCSV(data, `balance-sheet-${asOfDate}`, exportMeta);
     toast.success('Exported to CSV');
   };
 
@@ -166,7 +172,7 @@ export const BalanceSheet: React.FC = () => {
       ...equityAccounts.map(a => ({ Category: 'Equity', Code: a.code, Account: a.name, Balance: a.balance })),
       { Category: 'Equity', Code: 'RE', Account: 'Retained Earnings', Balance: retainedEarnings },
     ];
-    exportToExcel(data, `balance-sheet-${asOfDate}`, 'Balance Sheet');
+    exportToExcel(data, `balance-sheet-${asOfDate}`, 'Balance Sheet', exportMeta);
     toast.success('Exported to Excel');
   };
 
@@ -179,7 +185,6 @@ export const BalanceSheet: React.FC = () => {
     ];
     
     const html = `
-      <h2>As of: ${asOfDate}</h2>
       <h3>Assets</h3>
       ${generatePDFTable(['Code', 'Account', 'Balance'], assetRows, { totalRow: ['', 'Total Assets', formatCurrency(totalAssets)] })}
       <h3>Liabilities</h3>
@@ -188,7 +193,7 @@ export const BalanceSheet: React.FC = () => {
       ${generatePDFTable(['Code', 'Account', 'Balance'], equityRows, { totalRow: ['', 'Total Equity', formatCurrency(totalEquity)] })}
       <p><strong>Total Liabilities & Equity: ${formatCurrency(totalLiabilitiesAndEquity)}</strong></p>
     `;
-    exportToPDF(`Balance Sheet - ${selectedCompany?.name}`, html);
+    exportToPDF('Balance Sheet', html, exportMeta);
   };
 
   return (

@@ -141,7 +141,12 @@ const TaxReport: React.FC = () => {
         'Debit': e.debit,
         'Kredit': e.credit,
       })),
-      `rekap-pajak-${startDate}-${endDate}`
+      `rekap-pajak-${startDate}-${endDate}`,
+      {
+        companyName: selectedCompany?.name || '',
+        reportTitle: 'Rekap Pajak (PPN)',
+        dateLabel: `Periode: ${startDate} s/d ${endDate}`,
+      }
     );
   };
 

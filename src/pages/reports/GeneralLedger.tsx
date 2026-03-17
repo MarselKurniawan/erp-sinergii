@@ -181,6 +181,12 @@ export const GeneralLedger: React.FC = () => {
     label: `${acc.code} - ${acc.name}`,
   }));
 
+  const exportMeta = {
+    companyName: selectedCompany?.name || '',
+    reportTitle: 'General Ledger',
+    dateLabel: `Periode: ${startDate} s/d ${endDate}`,
+  };
+
   const handleExportCSV = () => {
     const data: any[] = [];
     accountLedgers.forEach(ledger => {
@@ -198,7 +204,7 @@ export const GeneralLedger: React.FC = () => {
       });
       data.push({ Account: '', Date: '', 'Entry #': '', Description: 'Closing Balance', Debit: ledger.totalDebits, Credit: ledger.totalCredits, Balance: ledger.closingBalance });
     });
-    exportToCSV(data, `general-ledger-${startDate}-to-${endDate}`);
+    exportToCSV(data, `general-ledger-${startDate}-to-${endDate}`, exportMeta);
     toast.success('Exported to CSV');
   };
 
@@ -219,12 +225,12 @@ export const GeneralLedger: React.FC = () => {
       });
       data.push({ Account: '', Date: '', 'Entry #': '', Description: 'Closing Balance', Debit: ledger.totalDebits, Credit: ledger.totalCredits, Balance: ledger.closingBalance });
     });
-    exportToExcel(data, `general-ledger-${startDate}-to-${endDate}`, 'General Ledger');
+    exportToExcel(data, `general-ledger-${startDate}-to-${endDate}`, 'General Ledger', exportMeta);
     toast.success('Exported to Excel');
   };
 
   const handleExportPDF = () => {
-    let html = `<h2>Period: ${startDate} to ${endDate}</h2>`;
+    let html = '';
     
     accountLedgers.forEach(ledger => {
       const rows = ledger.entries.map(e => [
@@ -247,7 +253,7 @@ export const GeneralLedger: React.FC = () => {
       `;
     });
     
-    exportToPDF(`General Ledger - ${selectedCompany?.name}`, html);
+    exportToPDF('General Ledger', html, exportMeta);
   };
 
   return (
