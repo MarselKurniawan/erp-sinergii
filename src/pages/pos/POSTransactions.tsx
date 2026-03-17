@@ -80,6 +80,8 @@ interface ReceiptSplitRule {
 
 const POSTransactions = () => {
   const { selectedCompany } = useCompany();
+  const { roles } = useAuth();
+  const canEditDelete = roles.includes('admin') || roles.includes('user');
   const [transactions, setTransactions] = useState<POSTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -90,7 +92,17 @@ const POSTransactions = () => {
   const [dateTo, setDateTo] = useState('');
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSetting[]>([]);
   const [splitRules, setSplitRules] = useState<ReceiptSplitRule[]>([]);
-
+  
+  // Edit/Delete state
+  const [editTransaction, setEditTransaction] = useState<POSTransaction | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editCustomerName, setEditCustomerName] = useState('');
+  const [editCustomerPhone, setEditCustomerPhone] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [editInvoiceNumber, setEditInvoiceNumber] = useState('');
+  const [deleteTransaction, setDeleteTransaction] = useState<POSTransaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fetchTransactions = async () => {
     if (!selectedCompany) return;
     
