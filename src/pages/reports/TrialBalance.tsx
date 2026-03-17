@@ -112,6 +112,12 @@ const TrialBalance: React.FC = () => {
   const difference = Math.abs(totalDebit - totalCredit);
   const isBalanced = difference < 0.01;
 
+  const exportMeta = {
+    companyName: selectedCompany?.name || '',
+    reportTitle: 'Trial Balance',
+    dateLabel: `Per tanggal: ${asOfDate}`,
+  };
+
   const handleExportCSV = () => {
     const data = accounts.map(acc => ({
       'Kode Akun': acc.code,
@@ -127,7 +133,7 @@ const TrialBalance: React.FC = () => {
       'Debit': totalDebit,
       'Credit': totalCredit,
     });
-    exportToCSV(data, `trial-balance-${asOfDate}`);
+    exportToCSV(data, `trial-balance-${asOfDate}`, exportMeta);
   };
 
   const handleExportExcel = () => {
@@ -145,7 +151,7 @@ const TrialBalance: React.FC = () => {
       'Debit': totalDebit,
       'Credit': totalCredit,
     });
-    exportToExcel(data, `trial-balance-${asOfDate}`);
+    exportToExcel(data, `trial-balance-${asOfDate}`, 'Trial Balance', exportMeta);
   };
 
   const handleExportPDF = () => {
@@ -158,10 +164,9 @@ const TrialBalance: React.FC = () => {
       formatCurrency(acc.credit),
     ]);
     const tableHtml = generatePDFTable(headers, data, {
-      subtitle: `Per ${asOfDate}`,
       totalRow: ['', 'TOTAL', '', formatCurrency(totalDebit), formatCurrency(totalCredit)],
     });
-    exportToPDF(`Trial Balance - ${selectedCompany?.name || 'Company'}`, tableHtml);
+    exportToPDF('Trial Balance', tableHtml, exportMeta);
   };
 
   if (!selectedCompany) {

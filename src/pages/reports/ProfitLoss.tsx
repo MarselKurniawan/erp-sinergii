@@ -136,6 +136,12 @@ export const ProfitLoss: React.FC = () => {
   const totalExpenses = expenseAccounts.reduce((sum, acc) => sum + acc.balance, 0);
   const netIncome = grossProfit - totalExpenses;
 
+  const exportMeta = {
+    companyName: selectedCompany?.name || '',
+    reportTitle: 'Profit & Loss Statement',
+    dateLabel: `Periode: ${startDate} s/d ${endDate}`,
+  };
+
   const handleExportCSV = () => {
     const data = [
       ...revenueAccounts.map(a => ({ Type: 'Revenue', Code: a.code, Account: a.name, Amount: a.balance })),
@@ -147,7 +153,7 @@ export const ProfitLoss: React.FC = () => {
       { Type: 'Total', Code: '', Account: 'Total Expenses', Amount: totalExpenses },
       { Type: 'Summary', Code: '', Account: 'Net Income', Amount: netIncome }
     ];
-    exportToCSV(data, `profit-loss-${startDate}-to-${endDate}`);
+    exportToCSV(data, `profit-loss-${startDate}-to-${endDate}`, exportMeta);
     toast.success('Exported to CSV');
   };
 
@@ -162,7 +168,7 @@ export const ProfitLoss: React.FC = () => {
       { Type: 'Total', Code: '', Account: 'Total Expenses', Amount: totalExpenses },
       { Type: 'Summary', Code: '', Account: 'Net Income', Amount: netIncome }
     ];
-    exportToExcel(data, `profit-loss-${startDate}-to-${endDate}`, 'Profit & Loss');
+    exportToExcel(data, `profit-loss-${startDate}-to-${endDate}`, 'Profit & Loss', exportMeta);
     toast.success('Exported to Excel');
   };
 
@@ -172,7 +178,6 @@ export const ProfitLoss: React.FC = () => {
     const expenseRows = expenseAccounts.map(a => [a.code, a.name, formatCurrency(a.balance)]);
     
     const html = `
-      <h2>Period: ${startDate} to ${endDate}</h2>
       <h3>Revenue</h3>
       ${generatePDFTable(['Code', 'Account', 'Amount'], revenueRows, { totalRow: ['', 'Total Revenue', formatCurrency(totalRevenue)] })}
       <h3>Cost of Goods Sold</h3>
@@ -182,7 +187,7 @@ export const ProfitLoss: React.FC = () => {
       ${generatePDFTable(['Code', 'Account', 'Amount'], expenseRows, { totalRow: ['', 'Total Expenses', formatCurrency(totalExpenses)] })}
       <h3>Net ${netIncome >= 0 ? 'Profit' : 'Loss'}: ${formatCurrency(netIncome)}</h3>
     `;
-    exportToPDF(`Profit & Loss Statement - ${selectedCompany?.name}`, html);
+    exportToPDF('Profit & Loss Statement', html, exportMeta);
   };
 
   return (
