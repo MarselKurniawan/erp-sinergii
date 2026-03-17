@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Search, Eye, Printer, FileSpreadsheet, FileText, ChevronDown, ChefHat, Receipt, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 import { exportToExcel, exportToPDF, generatePDFTable } from '@/lib/exportUtils';
 
 interface POSTransaction {
