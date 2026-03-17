@@ -831,6 +831,65 @@ const POSTransactions = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Transaction Dialog */}
+      <Dialog open={!!editTransaction} onOpenChange={() => setEditTransaction(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Transaksi {editTransaction?.transaction_number}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Tanggal Transaksi</Label>
+              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+            </div>
+            <div>
+              <Label>No. Invoice</Label>
+              <Input value={editInvoiceNumber} onChange={(e) => setEditInvoiceNumber(e.target.value)} placeholder="Opsional" />
+            </div>
+            <div>
+              <Label>Nama Pelanggan</Label>
+              <Input value={editCustomerName} onChange={(e) => setEditCustomerName(e.target.value)} placeholder="Opsional" />
+            </div>
+            <div>
+              <Label>No. Telepon</Label>
+              <Input value={editCustomerPhone} onChange={(e) => setEditCustomerPhone(e.target.value)} placeholder="Opsional" />
+            </div>
+            <div>
+              <Label>Catatan</Label>
+              <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="Opsional" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTransaction(null)}>Batal</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTransaction} onOpenChange={() => setDeleteTransaction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Transaksi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Transaksi <strong>{deleteTransaction?.transaction_number}</strong> akan dihapus beserta seluruh data terkait (item, pembayaran, jurnal akuntansi). Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTransaction}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
