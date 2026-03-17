@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Search, Eye, Printer, FileSpreadsheet, FileText, ChevronDown, ChefHat, Receipt } from 'lucide-react';
+import { Search, Eye, Printer, FileSpreadsheet, FileText, ChevronDown, ChefHat, Receipt, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 import { exportToExcel, exportToPDF, generatePDFTable } from '@/lib/exportUtils';
 
 interface POSTransaction {
@@ -76,6 +81,8 @@ interface ReceiptSplitRule {
 
 const POSTransactions = () => {
   const { selectedCompany } = useCompany();
+  const { roles } = useAuth();
+  const canEditDelete = roles.includes('admin') || roles.includes('user');
   const [transactions, setTransactions] = useState<POSTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,7 +93,17 @@ const POSTransactions = () => {
   const [dateTo, setDateTo] = useState('');
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSetting[]>([]);
   const [splitRules, setSplitRules] = useState<ReceiptSplitRule[]>([]);
-
+  
+  // Edit/Delete state
+  const [editTransaction, setEditTransaction] = useState<POSTransaction | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editCustomerName, setEditCustomerName] = useState('');
+  const [editCustomerPhone, setEditCustomerPhone] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [editInvoiceNumber, setEditInvoiceNumber] = useState('');
+  const [deleteTransaction, setDeleteTransaction] = useState<POSTransaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fetchTransactions = async () => {
     if (!selectedCompany) return;
     
@@ -356,6 +373,99 @@ const POSTransactions = () => {
     setTimeout(() => printReceiptByType(transaction, 'customer'), 500);
   };
 
+  // --- Edit handler ---
+  const handleOpenEdit = (transaction: POSTransaction) => {
+    setEditTransaction(transaction);
+    setEditDate(transaction.transaction_date);
+    setEditCustomerName(transaction.customer_name || '');
+    setEditCustomerPhone(transaction.customer_phone || '');
+    setEditNotes(transaction.notes || '');
+    setEditInvoiceNumber(transaction.invoice_number || '');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editTransaction || !selectedCompany) return;
+    setIsSaving(true);
+
+    // Update pos_transactions
+    const { error } = await supabase
+      .from('pos_transactions')
+      .update({
+        transaction_date: editDate,
+        customer_name: editCustomerName || null,
+        customer_phone: editCustomerPhone || null,
+        notes: editNotes || null,
+        invoice_number: editInvoiceNumber || null,
+      })
+      .eq('id', editTransaction.id);
+
+    if (error) {
+      toast.error('Gagal menyimpan perubahan');
+      setIsSaving(false);
+      return;
+    }
+
+    // Update related journal entry date
+    const { data: journals } = await supabase
+      .from('journal_entries')
+      .select('id')
+      .eq('reference_id', editTransaction.id)
+      .eq('reference_type', 'pos_transaction');
+
+    if (journals && journals.length > 0) {
+      for (const je of journals) {
+        await supabase
+          .from('journal_entries')
+          .update({ entry_date: editDate, description: `POS ${editTransaction.transaction_number} - ${editCustomerName || 'Walk-in'}` })
+          .eq('id', je.id);
+      }
+    }
+
+    toast.success('Transaksi berhasil diperbarui');
+    setEditTransaction(null);
+    setIsSaving(false);
+    fetchTransactions();
+  };
+
+  // --- Delete handler ---
+  const handleDeleteTransaction = async () => {
+    if (!deleteTransaction) return;
+    setIsDeleting(true);
+
+    // 1. Delete related journal entry lines & journal entries
+    const { data: journals } = await supabase
+      .from('journal_entries')
+      .select('id')
+      .eq('reference_id', deleteTransaction.id)
+      .eq('reference_type', 'pos_transaction');
+
+    if (journals && journals.length > 0) {
+      const jeIds = journals.map(j => j.id);
+      await supabase.from('journal_entry_lines').delete().in('journal_entry_id', jeIds);
+      await supabase.from('journal_entry_tags').delete().in('journal_entry_id', jeIds);
+      await supabase.from('journal_entries').delete().in('id', jeIds);
+    }
+
+    // 2. Delete transaction payments
+    await supabase.from('pos_transaction_payments').delete().eq('pos_transaction_id', deleteTransaction.id);
+
+    // 3. Delete transaction items
+    await supabase.from('pos_transaction_items').delete().eq('pos_transaction_id', deleteTransaction.id);
+
+    // 4. Delete the transaction itself
+    const { error } = await supabase.from('pos_transactions').delete().eq('id', deleteTransaction.id);
+
+    if (error) {
+      toast.error('Gagal menghapus transaksi: ' + error.message);
+    } else {
+      toast.success(`Transaksi ${deleteTransaction.transaction_number} berhasil dihapus beserta data terkait`);
+    }
+
+    setIsDeleting(false);
+    setDeleteTransaction(null);
+    fetchTransactions();
+  };
+
   const filteredTransactions = transactions.filter(t =>
     t.transaction_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (t.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -534,7 +644,7 @@ const POSTransactions = () => {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
-                              <Printer className="h-4 w-4" />
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -556,6 +666,22 @@ const POSTransactions = () => {
                               <Printer className="h-4 w-4 mr-2" />
                               Cetak Semua
                             </DropdownMenuItem>
+                            {canEditDelete && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleOpenEdit(transaction)}>
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit Transaksi
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => setDeleteTransaction(transaction)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Hapus Transaksi
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -705,6 +831,65 @@ const POSTransactions = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Transaction Dialog */}
+      <Dialog open={!!editTransaction} onOpenChange={() => setEditTransaction(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Transaksi {editTransaction?.transaction_number}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Tanggal Transaksi</Label>
+              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+            </div>
+            <div>
+              <Label>No. Invoice</Label>
+              <Input value={editInvoiceNumber} onChange={(e) => setEditInvoiceNumber(e.target.value)} placeholder="Opsional" />
+            </div>
+            <div>
+              <Label>Nama Pelanggan</Label>
+              <Input value={editCustomerName} onChange={(e) => setEditCustomerName(e.target.value)} placeholder="Opsional" />
+            </div>
+            <div>
+              <Label>No. Telepon</Label>
+              <Input value={editCustomerPhone} onChange={(e) => setEditCustomerPhone(e.target.value)} placeholder="Opsional" />
+            </div>
+            <div>
+              <Label>Catatan</Label>
+              <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="Opsional" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTransaction(null)}>Batal</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTransaction} onOpenChange={() => setDeleteTransaction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Transaksi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Transaksi <strong>{deleteTransaction?.transaction_number}</strong> akan dihapus beserta seluruh data terkait (item, pembayaran, jurnal akuntansi). Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTransaction}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
