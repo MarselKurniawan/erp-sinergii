@@ -372,6 +372,99 @@ const POSTransactions = () => {
     setTimeout(() => printReceiptByType(transaction, 'customer'), 500);
   };
 
+  // --- Edit handler ---
+  const handleOpenEdit = (transaction: POSTransaction) => {
+    setEditTransaction(transaction);
+    setEditDate(transaction.transaction_date);
+    setEditCustomerName(transaction.customer_name || '');
+    setEditCustomerPhone(transaction.customer_phone || '');
+    setEditNotes(transaction.notes || '');
+    setEditInvoiceNumber(transaction.invoice_number || '');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editTransaction || !selectedCompany) return;
+    setIsSaving(true);
+
+    // Update pos_transactions
+    const { error } = await supabase
+      .from('pos_transactions')
+      .update({
+        transaction_date: editDate,
+        customer_name: editCustomerName || null,
+        customer_phone: editCustomerPhone || null,
+        notes: editNotes || null,
+        invoice_number: editInvoiceNumber || null,
+      })
+      .eq('id', editTransaction.id);
+
+    if (error) {
+      toast.error('Gagal menyimpan perubahan');
+      setIsSaving(false);
+      return;
+    }
+
+    // Update related journal entry date
+    const { data: journals } = await supabase
+      .from('journal_entries')
+      .select('id')
+      .eq('reference_id', editTransaction.id)
+      .eq('reference_type', 'pos_transaction');
+
+    if (journals && journals.length > 0) {
+      for (const je of journals) {
+        await supabase
+          .from('journal_entries')
+          .update({ entry_date: editDate, description: `POS ${editTransaction.transaction_number} - ${editCustomerName || 'Walk-in'}` })
+          .eq('id', je.id);
+      }
+    }
+
+    toast.success('Transaksi berhasil diperbarui');
+    setEditTransaction(null);
+    setIsSaving(false);
+    fetchTransactions();
+  };
+
+  // --- Delete handler ---
+  const handleDeleteTransaction = async () => {
+    if (!deleteTransaction) return;
+    setIsDeleting(true);
+
+    // 1. Delete related journal entry lines & journal entries
+    const { data: journals } = await supabase
+      .from('journal_entries')
+      .select('id')
+      .eq('reference_id', deleteTransaction.id)
+      .eq('reference_type', 'pos_transaction');
+
+    if (journals && journals.length > 0) {
+      const jeIds = journals.map(j => j.id);
+      await supabase.from('journal_entry_lines').delete().in('journal_entry_id', jeIds);
+      await supabase.from('journal_entry_tags').delete().in('journal_entry_id', jeIds);
+      await supabase.from('journal_entries').delete().in('id', jeIds);
+    }
+
+    // 2. Delete transaction payments
+    await supabase.from('pos_transaction_payments').delete().eq('pos_transaction_id', deleteTransaction.id);
+
+    // 3. Delete transaction items
+    await supabase.from('pos_transaction_items').delete().eq('pos_transaction_id', deleteTransaction.id);
+
+    // 4. Delete the transaction itself
+    const { error } = await supabase.from('pos_transactions').delete().eq('id', deleteTransaction.id);
+
+    if (error) {
+      toast.error('Gagal menghapus transaksi: ' + error.message);
+    } else {
+      toast.success(`Transaksi ${deleteTransaction.transaction_number} berhasil dihapus beserta data terkait`);
+    }
+
+    setIsDeleting(false);
+    setDeleteTransaction(null);
+    fetchTransactions();
+  };
+
   const filteredTransactions = transactions.filter(t =>
     t.transaction_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (t.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase())
