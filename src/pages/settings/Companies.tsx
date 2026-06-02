@@ -606,11 +606,12 @@ const Companies: React.FC = () => {
                 <p className="font-medium text-foreground mb-1">ℹ️ Informasi</p>
                 <p>
                   Setelah company dibuat, sistem akan otomatis membuat Chart of Accounts (COA) 
-                  default sesuai bidang usaha yang dipilih dengan penomoran akun 1-8 
-                  berdasarkan standar akuntansi internasional.
+                  lengkap dengan penomoran 1-8 sesuai standar PSAK. Akun yang tidak digunakan 
+                  bisa di-nonaktifkan, tidak perlu dihapus.
                 </p>
               </div>
             )}
+
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
