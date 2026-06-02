@@ -633,19 +633,13 @@ export const ChartOfAccounts: React.FC = () => {
                                     size="sm"
                                     onClick={() => handleEdit(account)}
                                     className="h-7 w-7 p-0"
+                                    title="Ubah tipe atau status (kode & nama dikunci)"
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDelete(account.id)}
-                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
                                 </div>
                               </td>
+
                             </tr>
                           );
                         })}
