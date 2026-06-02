@@ -634,7 +634,7 @@ const POSTransactions = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTransactions.map(transaction => (
+                paginatedTransactions.map(transaction => (
                   <TableRow key={transaction.id}>
                     <TableCell className="font-medium">{transaction.transaction_number}</TableCell>
                     <TableCell className="font-mono text-sm">{transaction.invoice_number || '-'}</TableCell>
