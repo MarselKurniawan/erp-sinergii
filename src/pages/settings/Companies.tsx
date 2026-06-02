@@ -542,48 +542,12 @@ const Companies: React.FC = () => {
             </DialogTitle>
             {!selectedCompany && (
               <DialogDescription>
-                Pilih bidang usaha untuk menentukan template Chart of Accounts default.
+                Sistem otomatis membuat Chart of Accounts lengkap (1-8) sesuai standar PSAK.
               </DialogDescription>
             )}
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Business Type Selection - Only for new companies */}
-            {!selectedCompany && (
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Bidang Usaha *</Label>
-                <RadioGroup
-                  value={formData.business_type}
-                  onValueChange={(value) => setFormData({ ...formData, business_type: value as BusinessType })}
-                  className="grid gap-3"
-                >
-                  {(Object.keys(businessTypeLabels) as BusinessType[]).map((type) => (
-                    <div key={type} className="relative">
-                      <RadioGroupItem
-                        value={type}
-                        id={type}
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor={type}
-                        className="flex items-start gap-3 rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
-                      >
-                        <div className="flex-shrink-0 mt-0.5 text-muted-foreground peer-data-[state=checked]:text-primary">
-                          {businessTypeIcons[type]}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-medium leading-none">
-                            {businessTypeLabels[type].label}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {businessTypeLabels[type].description}
-                          </p>
-                        </div>
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            )}
+
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
