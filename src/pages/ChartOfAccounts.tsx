@@ -428,9 +428,12 @@ export const ChartOfAccounts: React.FC = () => {
                   placeholder="e.g., 1-1001"
                   className="input-field"
                   required
+                  disabled={!!editingAccount}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Format: X-XXXX (contoh: 1-1001 untuk Kas, 6-1100 untuk Beban Gaji)
+                  {editingAccount
+                    ? 'Kode akun tidak bisa diubah untuk menjaga integritas data.'
+                    : 'Format: X-XXXX (contoh: 1-1001 untuk Kas, 6-1100 untuk Beban Gaji)'}
                 </p>
               </div>
               <div>
@@ -441,7 +444,13 @@ export const ChartOfAccounts: React.FC = () => {
                   placeholder="e.g., Cash on Hand"
                   className="input-field"
                   required
+                  disabled={!!editingAccount}
                 />
+                {editingAccount && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Nama akun tidak bisa diubah. Anda hanya dapat mengubah status aktif.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="form-label">Account Type</label>
@@ -452,6 +461,7 @@ export const ChartOfAccounts: React.FC = () => {
                   placeholder="Select account type"
                 />
               </div>
+
               <div className="flex items-center justify-between">
                 <label className="form-label mb-0">Active Status</label>
                 <Switch
