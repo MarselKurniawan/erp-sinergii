@@ -93,6 +93,9 @@ const POSTransactions = () => {
   const [dateTo, setDateTo] = useState('');
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSetting[]>([]);
   const [splitRules, setSplitRules] = useState<ReceiptSplitRule[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
   
   // Edit/Delete state
   const [editTransaction, setEditTransaction] = useState<POSTransaction | null>(null);
