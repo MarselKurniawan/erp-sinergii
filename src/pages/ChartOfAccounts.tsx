@@ -179,15 +179,43 @@ export const ChartOfAccounts: React.FC = () => {
     if (error) {
       console.error('Error fetching accounts:', error);
       toast.error('Failed to load accounts');
-    } else {
-      setAccounts(data || []);
+      setIsLoading(false);
+      return;
     }
+
+    const accountList = (data || []) as Account[];
+
+    // Compute real-time balance from journal entry lines
+    const { data: journalLines } = await supabase
+      .from('journal_entry_lines')
+      .select('account_id, debit_amount, credit_amount, journal_entries!inner(company_id, is_posted)')
+      .eq('journal_entries.company_id', selectedCompany.id);
+
+    const totals: Record<string, { debit: number; credit: number }> = {};
+    (journalLines || []).forEach((line: any) => {
+      const id = line.account_id;
+      if (!totals[id]) totals[id] = { debit: 0, credit: 0 };
+      totals[id].debit += Number(line.debit_amount || 0);
+      totals[id].credit += Number(line.credit_amount || 0);
+    });
+
+    const debitNormal = new Set(['asset', 'expense', 'cash_bank', 'other_expenses']);
+    const withBalance = accountList.map(acc => {
+      const t = totals[acc.id] || { debit: 0, credit: 0 };
+      const balance = debitNormal.has(acc.account_type)
+        ? t.debit - t.credit
+        : t.credit - t.debit;
+      return { ...acc, balance };
+    });
+
+    setAccounts(withBalance);
     setIsLoading(false);
   };
 
   useEffect(() => {
     fetchAccounts();
   }, [selectedCompany]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
