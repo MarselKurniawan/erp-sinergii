@@ -93,6 +93,9 @@ const POSTransactions = () => {
   const [dateTo, setDateTo] = useState('');
   const [receiptSettings, setReceiptSettings] = useState<ReceiptSetting[]>([]);
   const [splitRules, setSplitRules] = useState<ReceiptSplitRule[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
   
   // Edit/Delete state
   const [editTransaction, setEditTransaction] = useState<POSTransaction | null>(null);
@@ -471,6 +474,21 @@ const POSTransactions = () => {
     (t.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedTransactions = filteredTransactions.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize
+  );
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, dateFrom, dateTo, pageSize]);
+
+
+
   const totalRevenue = filteredTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + (t.total_amount || 0), 0);
   const totalCogs = filteredTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + (t.total_cogs || 0), 0);
   const grossProfit = totalRevenue - totalCogs;
@@ -616,7 +634,7 @@ const POSTransactions = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTransactions.map(transaction => (
+                paginatedTransactions.map(transaction => (
                   <TableRow key={transaction.id}>
                     <TableCell className="font-medium">{transaction.transaction_number}</TableCell>
                     <TableCell className="font-mono text-sm">{transaction.invoice_number || '-'}</TableCell>
@@ -691,8 +709,59 @@ const POSTransactions = () => {
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {!isLoading && filteredTransactions.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  Menampilkan {((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, filteredTransactions.length)} dari {filteredTransactions.length}
+                </span>
+                <select
+                  className="ml-2 h-8 rounded-md border border-input bg-background px-2 text-sm"
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                >
+                  {[10, 20, 50, 100].map(n => (
+                    <option key={n} value={n}>{n}/halaman</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safePage <= 1}
+                  onClick={() => setCurrentPage(1)}
+                >«</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safePage <= 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                >‹ Sebelumnya</Button>
+                <span className="px-3 text-sm">
+                  Halaman <strong>{safePage}</strong> / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safePage >= totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                >Berikutnya ›</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safePage >= totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                >»</Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+
 
       {/* Transaction Details Dialog */}
       <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>

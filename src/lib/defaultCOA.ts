@@ -200,28 +200,34 @@ const manufacturingAccounts: COATemplate[] = [
   { code: '5-2900', name: 'Biaya Overhead Lainnya', account_type: 'expense', parent_code: '5-2000' },
 ];
 
-export const getDefaultCOA = (businessType: BusinessType): COATemplate[] => {
-  let industryAccounts: COATemplate[];
-
-  switch (businessType) {
-    case 'trading':
-      industryAccounts = tradingAccounts;
-      break;
-    case 'service':
-      industryAccounts = serviceAccounts;
-      break;
-    case 'manufacturing':
-      industryAccounts = manufacturingAccounts;
-      break;
-    default:
-      industryAccounts = tradingAccounts;
-  }
-
-  return [
+/**
+ * Returns the FULL standard PSAK Chart of Accounts (1-8), combining
+ * common accounts + accounts from all industries (trading, service, manufacturing),
+ * deduplicated by code. Unused accounts can simply be set inactive by the user.
+ */
+export const getFullPSAKCOA = (): COATemplate[] => {
+  const merged: COATemplate[] = [
     ...commonAccounts,
-    ...industryAccounts,
+    ...tradingAccounts,
+    ...serviceAccounts,
+    ...manufacturingAccounts,
     ...commonOperatingExpenses,
-  ].sort((a, b) => a.code.localeCompare(b.code));
+  ];
+
+  const seen = new Set<string>();
+  const unique: COATemplate[] = [];
+  for (const acc of merged) {
+    if (!seen.has(acc.code)) {
+      seen.add(acc.code);
+      unique.push(acc);
+    }
+  }
+  return unique.sort((a, b) => a.code.localeCompare(b.code));
+};
+
+export const getDefaultCOA = (_businessType?: BusinessType): COATemplate[] => {
+  // Always return the full standard PSAK COA regardless of business type.
+  return getFullPSAKCOA();
 };
 
 export const businessTypeLabels: Record<BusinessType, { label: string; description: string }> = {
