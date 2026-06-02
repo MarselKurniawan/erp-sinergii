@@ -474,6 +474,21 @@ const POSTransactions = () => {
     (t.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedTransactions = filteredTransactions.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize
+  );
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, dateFrom, dateTo, pageSize]);
+
+
+
   const totalRevenue = filteredTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + (t.total_amount || 0), 0);
   const totalCogs = filteredTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + (t.total_cogs || 0), 0);
   const grossProfit = totalRevenue - totalCogs;
