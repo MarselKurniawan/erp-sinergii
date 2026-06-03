@@ -45,6 +45,7 @@ import InventoryReport from "./pages/reports/InventoryReport";
 import Users from "./pages/settings/Users";
 import Companies from "./pages/settings/Companies";
 import Profile from "./pages/settings/Profile";
+import Permissions from "./pages/settings/Permissions";
 import PeriodClosing from "./pages/accounting/PeriodClosing";
 import TransactionTags from "./pages/accounting/TransactionTags";
 import ActivityLog from "./pages/accounting/ActivityLog";
@@ -139,6 +140,7 @@ const App = () => (
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />
                 <Route path="/settings/profile" element={<Profile />} />
+                <Route path="/settings/permissions" element={<Permissions />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

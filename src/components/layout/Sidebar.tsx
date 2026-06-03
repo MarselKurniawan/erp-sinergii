@@ -134,6 +134,7 @@ const menuItems: MenuItem[] = [
     label: 'Settings',
     children: [
       { label: 'Users', path: '/settings/users' },
+      { label: 'Permissions', path: '/settings/permissions' },
       { label: 'Companies', path: '/settings/companies' },
     ]
   },
