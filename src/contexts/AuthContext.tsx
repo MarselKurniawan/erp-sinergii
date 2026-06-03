@@ -8,6 +8,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   roles: AppRole[];
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isCashier: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -122,7 +123,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         profile,
         roles,
-        isAdmin: roles.includes('admin'),
+        isAdmin: roles.includes('admin') || roles.includes('superadmin' as any),
+        isSuperAdmin: roles.includes('superadmin' as any),
         isCashier: roles.includes('cashier'),
         isLoading,
         signIn,
