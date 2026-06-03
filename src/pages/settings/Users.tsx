@@ -392,6 +392,12 @@ const Users: React.FC = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="superadmin">
+                            <div className="flex items-center gap-2">
+                              <Shield className="w-4 h-4 text-destructive" />
+                              Super Admin
+                            </div>
+                          </SelectItem>
                           <SelectItem value="admin">
                             <div className="flex items-center gap-2">
                               <Shield className="w-4 h-4" />

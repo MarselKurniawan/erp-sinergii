@@ -456,6 +456,33 @@ export type Database = {
           },
         ]
       }
+      features: {
+        Row: {
+          created_at: string
+          description: string | null
+          key: string
+          label: string
+          module: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          key: string
+          label: string
+          module: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          key?: string
+          label?: string
+          module?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       fixed_assets: {
         Row: {
           accumulated_depreciation: number | null
@@ -2877,6 +2904,50 @@ export type Database = {
           },
         ]
       }
+      user_permissions: {
+        Row: {
+          can_create: boolean
+          can_delete: boolean
+          can_edit: boolean
+          can_view: boolean
+          created_at: string
+          feature_key: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_view?: boolean
+          created_at?: string
+          feature_key: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_view?: boolean
+          created_at?: string
+          feature_key?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permissions_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2954,6 +3025,10 @@ export type Database = {
         Args: { p_company_id: string; p_document_type: string }
         Returns: string
       }
+      has_permission: {
+        Args: { _action: string; _feature_key: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2961,6 +3036,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_superadmin: { Args: { _user_id: string }; Returns: boolean }
       user_has_company_access: {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
@@ -2976,7 +3052,7 @@ export type Database = {
         | "cash_bank"
         | "other_income"
         | "other_expenses"
-      app_role: "admin" | "user" | "cashier"
+      app_role: "admin" | "user" | "cashier" | "superadmin"
       asset_status: "active" | "disposed" | "fully_depreciated"
       depreciation_method: "straight_line" | "declining_balance"
       invoice_status:
@@ -3139,7 +3215,7 @@ export const Constants = {
         "other_income",
         "other_expenses",
       ],
-      app_role: ["admin", "user", "cashier"],
+      app_role: ["admin", "user", "cashier", "superadmin"],
       asset_status: ["active", "disposed", "fully_depreciated"],
       depreciation_method: ["straight_line", "declining_balance"],
       invoice_status: [
