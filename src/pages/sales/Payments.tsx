@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface Customer {
   id: string;
@@ -140,13 +141,8 @@ export const SalesPayments: React.FC = () => {
     }
   }, [formData.customer_id]);
 
-  const generatePaymentNumber = () => {
-    const date = new Date();
-    const prefix = 'RCV';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `${prefix}-${year}${month}-${random}`;
+  const generatePaymentNumber = async () => {
+    return await generateDocumentNumber(selectedCompany!.id, 'PAY-IN');
   };
 
   const toggleInvoiceAllocation = (invoice: Invoice, checked: boolean) => {
@@ -182,7 +178,7 @@ export const SalesPayments: React.FC = () => {
       return;
     }
 
-    const paymentNumber = generatePaymentNumber();
+    const paymentNumber = await generatePaymentNumber();
 
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
@@ -234,8 +230,7 @@ export const SalesPayments: React.FC = () => {
     }
 
     // Create journal entry for cash receipt
-    const date = new Date();
-    const entryNumber = `JE-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
     
     const customer = customers.find(c => c.id === formData.customer_id);
     
