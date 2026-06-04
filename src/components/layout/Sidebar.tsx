@@ -113,7 +113,6 @@ const menuItems: MenuItem[] = [
     children: [
       { label: 'Tutup Buku', path: '/accounting/period-closing' },
       { label: 'Tag Transaksi', path: '/accounting/tags' },
-      { label: 'Audit Trail', path: '/accounting/activity-log' },
     ]
   },
   {
@@ -134,8 +133,8 @@ const menuItems: MenuItem[] = [
     label: 'Settings',
     children: [
       { label: 'Users', path: '/settings/users' },
-      { label: 'Permissions', path: '/settings/permissions' },
       { label: 'Companies', path: '/settings/companies' },
+      { label: 'Log Activity', path: '/settings/activity-log' },
     ]
   },
 ];
