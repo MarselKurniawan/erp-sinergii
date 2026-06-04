@@ -45,10 +45,9 @@ import InventoryReport from "./pages/reports/InventoryReport";
 import Users from "./pages/settings/Users";
 import Companies from "./pages/settings/Companies";
 import Profile from "./pages/settings/Profile";
-import Permissions from "./pages/settings/Permissions";
 import PeriodClosing from "./pages/accounting/PeriodClosing";
 import TransactionTags from "./pages/accounting/TransactionTags";
-import ActivityLog from "./pages/accounting/ActivityLog";
+import ActivityLog from "./pages/settings/ActivityLog";
 import POSDashboard from "./pages/pos/POSDashboard";
 import POSTransactions from "./pages/pos/POSTransactions";
 import POSSettings from "./pages/pos/POSSettings";
@@ -124,6 +123,7 @@ const App = () => (
                 {/* Accounting */}
                 <Route path="/accounting/period-closing" element={<PeriodClosing />} />
                 <Route path="/accounting/tags" element={<TransactionTags />} />
+                <Route path="/settings/activity-log" element={<ActivityLog />} />
                 <Route path="/accounting/activity-log" element={<ActivityLog />} />
                 <Route path="/reports/profit-loss" element={<ProfitLoss />} />
                 <Route path="/reports/balance-sheet" element={<BalanceSheet />} />
@@ -140,7 +140,6 @@ const App = () => (
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />
                 <Route path="/settings/profile" element={<Profile />} />
-                <Route path="/settings/permissions" element={<Permissions />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

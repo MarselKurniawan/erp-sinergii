@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-export type EntityType = 
+export type EntityType =
   | 'sales_order' | 'invoice' | 'payment' | 'customer'
   | 'purchase_order' | 'bill' | 'goods_receipt' | 'supplier'
   | 'product' | 'journal_entry' | 'pos_transaction'
@@ -34,7 +34,6 @@ export const logActivity = async (params: LogActivityParams) => {
     });
   } catch (error) {
     console.error('Failed to log activity:', error);
-    // Don't throw - audit logging should not break the main flow
   }
 };
 
@@ -51,25 +50,61 @@ export const getActionLabel = (action: string): string => {
   return labels[action] || action;
 };
 
+const ENTITY_LABELS: Record<string, string> = {
+  // friendly aliases
+  sales_order: 'Sales Order',
+  sales_orders: 'Sales Order',
+  invoice: 'Invoice',
+  invoices: 'Invoice',
+  payment: 'Pembayaran',
+  payments: 'Pembayaran',
+  sales_payments: 'Pembayaran Penjualan',
+  purchase_payments: 'Pembayaran Pembelian',
+  customer: 'Customer',
+  customers: 'Customer',
+  purchase_order: 'Purchase Order',
+  purchase_orders: 'Purchase Order',
+  bill: 'Bill',
+  bills: 'Bill',
+  goods_receipt: 'Penerimaan Barang',
+  goods_receipts: 'Penerimaan Barang',
+  supplier: 'Supplier',
+  suppliers: 'Supplier',
+  product: 'Produk',
+  products: 'Produk',
+  materials: 'Bahan Baku',
+  journal_entry: 'Jurnal Entry',
+  journal_entries: 'Jurnal Entry',
+  journal_lines: 'Baris Jurnal',
+  pos_transaction: 'Transaksi POS',
+  pos_transactions: 'Transaksi POS',
+  pos_items: 'Item POS',
+  chart_of_accounts: 'Akun (COA)',
+  accounts: 'Akun (COA)',
+  fixed_asset: 'Aset Tetap',
+  fixed_assets: 'Aset Tetap',
+  stock_transfer: 'Transfer Stok',
+  stock_transfers: 'Transfer Stok',
+  stock_opname: 'Stock Opname',
+  stock_opnames: 'Stock Opname',
+  down_payment: 'Down Payment',
+  down_payments: 'Down Payment',
+  company: 'Perusahaan',
+  companies: 'Perusahaan',
+  warehouses: 'Gudang',
+  recipes: 'Resep / BOM',
+  pos_deposits: 'Deposit POS',
+  promotions: 'Promosi',
+  tax_settings: 'Tax & Services',
+  product_categories: 'Kategori Produk',
+  user_permissions: 'Permission User',
+  user_roles: 'Role User',
+  user_companies: 'Assignment Perusahaan',
+};
+
+const humanize = (s: string) =>
+  s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
 export const getEntityLabel = (entityType: string): string => {
-  const labels: Record<string, string> = {
-    sales_order: 'Sales Order',
-    invoice: 'Invoice',
-    payment: 'Pembayaran',
-    customer: 'Customer',
-    purchase_order: 'Purchase Order',
-    bill: 'Bill',
-    goods_receipt: 'Penerimaan Barang',
-    supplier: 'Supplier',
-    product: 'Produk',
-    journal_entry: 'Jurnal',
-    pos_transaction: 'Transaksi POS',
-    chart_of_accounts: 'Akun',
-    fixed_asset: 'Aset Tetap',
-    stock_transfer: 'Transfer Stok',
-    stock_opname: 'Stock Opname',
-    down_payment: 'Down Payment',
-    company: 'Perusahaan',
-  };
-  return labels[entityType] || entityType;
+  return ENTITY_LABELS[entityType] || humanize(entityType);
 };
