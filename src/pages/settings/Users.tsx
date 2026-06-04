@@ -569,48 +569,34 @@ const Users: React.FC = () => {
 
       {/* Add/Edit User Dialog */}
       <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                value={userForm.full_name}
-                onChange={(e) => setUserForm(prev => ({ ...prev, full_name: e.target.value }))}
-                placeholder="Enter full name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={userForm.email}
-                onChange={(e) => setUserForm(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Enter email"
-                disabled={!!editingUser}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input id="full_name" value={userForm.full_name}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, full_name: e.target.value }))}
+                  placeholder="Enter full name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={userForm.email}
+                  onChange={(e) => setUserForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Enter email" disabled={!!editingUser} />
+              </div>
             </div>
             {!editingUser && (
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={userForm.password}
+                  <Input id="password" type={showPassword ? 'text' : 'password'} value={userForm.password}
                     onChange={(e) => setUserForm(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Enter password"
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
+                    placeholder="Enter password" className="pr-10" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -620,42 +606,34 @@ const Users: React.FC = () => {
               <Label htmlFor="role">Role</Label>
               <Select
                 value={userForm.role}
-                onValueChange={(value) => setUserForm(prev => ({ ...prev, role: value as AppRole, companyIds: value === 'admin' ? [] : prev.companyIds }))}
+                onValueChange={(value) => setUserForm(prev => ({ ...prev, role: value as AppRole, companyIds: (value === 'admin' || value === 'superadmin') ? [] : prev.companyIds }))}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="superadmin">Super Admin (Akses Penuh Otomatis)</SelectItem>
                   <SelectItem value="admin">Admin (All Companies)</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="cashier">Kasir (POS Only)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {userForm.role !== 'admin' && (
+            {userForm.role !== 'admin' && userForm.role !== 'superadmin' && (
               <div className="space-y-2">
                 <Label>Assign Companies</Label>
-                <p className="text-xs text-muted-foreground">
-                  Select which companies this user can access:
-                </p>
+                <p className="text-xs text-muted-foreground">Pilih perusahaan yang bisa diakses user ini:</p>
                 <div className="max-h-40 overflow-y-auto space-y-2 border rounded-lg p-2">
                   {companies.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-2">No companies available</p>
                   ) : (
                     companies.map(company => (
-                      <div
-                        key={company.id}
-                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50"
-                      >
+                      <div key={company.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50">
                         <Checkbox
                           id={`form-company-${company.id}`}
                           checked={userForm.companyIds.includes(company.id)}
                           onCheckedChange={(checked) => {
                             setUserForm(prev => ({
                               ...prev,
-                              companyIds: checked
-                                ? [...prev.companyIds, company.id]
-                                : prev.companyIds.filter(id => id !== company.id)
+                              companyIds: checked ? [...prev.companyIds, company.id] : prev.companyIds.filter(id => id !== company.id)
                             }));
                           }}
                         />
@@ -668,24 +646,79 @@ const Users: React.FC = () => {
                   )}
                 </div>
                 {userForm.companyIds.length === 0 && (
-                  <p className="text-xs text-amber-600">User won't be able to access any company data without assignments.</p>
+                  <p className="text-xs text-amber-600">User belum dapat akses perusahaan manapun.</p>
                 )}
               </div>
             )}
+
+            {/* Permissions matrix — only for non-superadmin */}
+            {userForm.role === 'superadmin' ? (
+              <div className="p-3 bg-muted rounded-lg text-sm flex items-center gap-2">
+                <Shield className="w-4 h-4 text-destructive" />
+                <span>Super Admin otomatis punya akses penuh ke semua fitur — tidak perlu assign permission.</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" /> Permission per Fitur
+                </Label>
+                <p className="text-xs text-muted-foreground">Centang fitur dan aksi yang boleh dilakukan user ini.</p>
+                <div className="border rounded-lg max-h-[400px] overflow-y-auto">
+                  {Object.entries(features.reduce<Record<string, Feature[]>>((acc, f) => { (acc[f.module] ||= []).push(f); return acc; }, {})).map(([mod, feats]) => (
+                    <div key={mod} className="border-b last:border-b-0">
+                      <div className="bg-muted/50 px-3 py-2 flex items-center justify-between sticky top-0 z-10">
+                        <h4 className="font-semibold text-sm">{mod}</h4>
+                        <div className="flex gap-3 text-xs">
+                          {ACTIONS.map(a => (
+                            <label key={a} className="flex items-center gap-1 cursor-pointer">
+                              <Checkbox
+                                checked={feats.every(f => permMap[f.key]?.[a])}
+                                onCheckedChange={(v) => toggleModulePerm(mod, a, !!v)}
+                              />
+                              All {ACTION_LABELS[a]}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-xs">
+                            <th className="text-left px-3 py-1.5">Fitur</th>
+                            {ACTIONS.map(a => (<th key={a} className="text-center px-1 py-1.5 w-16">{ACTION_LABELS[a]}</th>))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {feats.map(f => (
+                            <tr key={f.key} className="border-b last:border-b-0 hover:bg-muted/20">
+                              <td className="px-3 py-1.5">{f.label}</td>
+                              {ACTIONS.map(a => (
+                                <td key={a} className="text-center px-1 py-1.5">
+                                  <Checkbox
+                                    checked={permMap[f.key]?.[a] || false}
+                                    onCheckedChange={(v) => togglePerm(f.key, a, !!v)}
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setUserDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={editingUser ? handleEditUser : handleAddUser}
-                disabled={saving}
-              >
+              <Button variant="outline" onClick={() => setUserDialogOpen(false)}>Cancel</Button>
+              <Button onClick={editingUser ? handleEditUser : handleAddUser} disabled={saving}>
                 {saving ? 'Saving...' : editingUser ? 'Save Changes' : 'Create User'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
 
 
       <PasswordConfirmDialog
