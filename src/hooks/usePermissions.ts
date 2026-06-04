@@ -13,7 +13,7 @@ export interface PermissionRow {
 export type PermissionAction = 'view' | 'create' | 'edit' | 'delete';
 
 export const usePermissions = () => {
-  const { user, isAdmin, roles } = useAuth();
+  const { user, roles } = useAuth();
   const isSuperAdmin = roles.includes('superadmin' as any);
   const [perms, setPerms] = useState<Record<string, PermissionRow>>({});
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export const usePermissions = () => {
   useEffect(() => {
     const load = async () => {
       if (!user) { setPerms({}); setLoading(false); return; }
-      if (isAdmin || isSuperAdmin) { setLoading(false); return; }
+      if (isSuperAdmin) { setLoading(false); return; }
       const { data } = await supabase
         .from('user_permissions' as any)
         .select('feature_key,can_view,can_create,can_edit,can_delete')
@@ -32,10 +32,10 @@ export const usePermissions = () => {
       setLoading(false);
     };
     load();
-  }, [user, isAdmin, isSuperAdmin]);
+  }, [user, isSuperAdmin]);
 
   const can = (featureKey: string, action: PermissionAction = 'view'): boolean => {
-    if (isAdmin || isSuperAdmin) return true;
+    if (isSuperAdmin) return true;
     const p = perms[featureKey];
     if (!p) return false;
     switch (action) {
