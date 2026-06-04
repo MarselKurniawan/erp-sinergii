@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface Deposit {
   id: string;
@@ -215,7 +216,7 @@ const Deposits = () => {
 
       // Create journal entry for deposit
       if (selectedMethod?.account_id) {
-        const journalNumber = `JV-DP-${depositNumber}`;
+        const journalNumber = await generateDocumentNumber(selectedCompany!.id, 'JE');
         
         const { data: journalEntry, error: jeError } = await supabase
           .from('journal_entries')

@@ -16,6 +16,7 @@ import {
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface DownPaymentDialogProps {
   open: boolean;
@@ -53,13 +54,8 @@ export const DownPaymentDialog: React.FC<DownPaymentDialogProps> = ({
   const cashAccounts = getCashBankAccounts();
   const maxDp = totalAmount - dpPaid;
 
-  const generateDpNumber = () => {
-    const date = new Date();
-    const prefix = type === 'sales' ? 'DP-SO' : 'DP-PO';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `${prefix}-${year}${month}-${random}`;
+  const generateDpNumber = async () => {
+    return await generateDocumentNumber(selectedCompany!.id, 'DP');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,7 +77,7 @@ export const DownPaymentDialog: React.FC<DownPaymentDialogProps> = ({
     }
 
     setIsLoading(true);
-    const dpNumber = generateDpNumber();
+    const dpNumber = await generateDpNumber();
     const date = new Date();
 
     // Create down payment record
@@ -128,7 +124,7 @@ export const DownPaymentDialog: React.FC<DownPaymentDialogProps> = ({
     }
 
     // Create journal entry
-    const entryNumber = `JE-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
 
     const { data: journalEntry, error: journalError } = await supabase
       .from('journal_entries')
