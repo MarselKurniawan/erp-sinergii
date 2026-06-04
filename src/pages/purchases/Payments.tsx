@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface Bill {
   id: string;
