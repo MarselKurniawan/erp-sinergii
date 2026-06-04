@@ -190,12 +190,13 @@ const Users: React.FC = () => {
   const openAddUserDialog = () => {
     setEditingUser(null);
     setUserForm({ email: '', password: '', full_name: '', role: 'user', companyIds: [] });
+    setPermMap({});
     setShowPassword(false);
     setUserDialogOpen(true);
   };
 
   // Open dialog for editing user
-  const openEditUserDialog = (user: UserWithRole) => {
+  const openEditUserDialog = async (user: UserWithRole) => {
     setEditingUser(user);
     setUserForm({
       email: user.email || '',
@@ -204,7 +205,53 @@ const Users: React.FC = () => {
       role: user.roles[0] || 'user',
       companyIds: user.companies.map(c => c.id),
     });
+    setPermMap({});
     setUserDialogOpen(true);
+    await loadUserPermissions(user.id);
+  };
+
+  const togglePerm = (key: string, action: typeof ACTIONS[number], val: boolean) => {
+    setPermMap(prev => ({
+      ...prev,
+      [key]: {
+        feature_key: key,
+        can_view: prev[key]?.can_view || false,
+        can_create: prev[key]?.can_create || false,
+        can_edit: prev[key]?.can_edit || false,
+        can_delete: prev[key]?.can_delete || false,
+        [action]: val,
+      } as PermRow,
+    }));
+  };
+
+  const toggleModulePerm = (mod: string, action: typeof ACTIONS[number], val: boolean) => {
+    const keys = features.filter(f => f.module === mod).map(f => f.key);
+    setPermMap(prev => {
+      const next = { ...prev };
+      keys.forEach(k => {
+        next[k] = {
+          feature_key: k,
+          can_view: next[k]?.can_view || false,
+          can_create: next[k]?.can_create || false,
+          can_edit: next[k]?.can_edit || false,
+          can_delete: next[k]?.can_delete || false,
+          [action]: val,
+        } as PermRow;
+      });
+      return next;
+    });
+  };
+
+  const savePermissionsForUser = async (userId: string, role: AppRole) => {
+    // Wipe existing
+    await supabase.from('user_permissions' as any).delete().eq('user_id', userId);
+    if (role === 'superadmin') return; // superadmin bypass, no rows needed
+    const rows = Object.values(permMap)
+      .filter(r => r.can_view || r.can_create || r.can_edit || r.can_delete)
+      .map(r => ({ ...r, user_id: userId }));
+    if (rows.length) {
+      await supabase.from('user_permissions' as any).insert(rows);
+    }
   };
 
   // Handle add new user via Edge Function (no auto-login)
