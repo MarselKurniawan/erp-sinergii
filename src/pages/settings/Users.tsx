@@ -55,6 +55,11 @@ interface Company {
   code: string;
 }
 
+interface Feature { key: string; module: string; label: string; sort_order: number; }
+interface PermRow { feature_key: string; can_view: boolean; can_create: boolean; can_edit: boolean; can_delete: boolean; }
+const ACTIONS = ['can_view','can_create','can_edit','can_delete'] as const;
+const ACTION_LABELS = { can_view: 'Lihat', can_create: 'Buat', can_edit: 'Edit', can_delete: 'Hapus' };
+
 const Users: React.FC = () => {
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
@@ -74,6 +79,10 @@ const Users: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Permission matrix state
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [permMap, setPermMap] = useState<Record<string, PermRow>>({});
+
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserWithRole | null>(null);
@@ -82,8 +91,22 @@ const Users: React.FC = () => {
     if (isAdmin) {
       fetchUsers();
       fetchCompanies();
+      fetchFeatures();
     }
   }, [isAdmin]);
+
+  const fetchFeatures = async () => {
+    const { data } = await supabase.from('features' as any).select('*').order('sort_order');
+    setFeatures(((data as any) || []) as Feature[]);
+  };
+
+  const loadUserPermissions = async (userId: string) => {
+    const { data } = await supabase.from('user_permissions' as any)
+      .select('*').eq('user_id', userId);
+    const m: Record<string, PermRow> = {};
+    (data as any[] || []).forEach(r => { m[r.feature_key] = r; });
+    setPermMap(m);
+  };
 
   const fetchUsers = async () => {
     try {
