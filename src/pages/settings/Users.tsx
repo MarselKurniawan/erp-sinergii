@@ -283,6 +283,12 @@ const Users: React.FC = () => {
         throw new Error(response.data.error);
       }
 
+      // Save permissions for the newly-created user
+      const newUserId = response.data?.user?.id || response.data?.id;
+      if (newUserId) {
+        try { await savePermissionsForUser(newUserId, userForm.role); } catch (e) { console.error(e); }
+      }
+
       toast.success('User created successfully');
       setUserDialogOpen(false);
       fetchUsers();
@@ -341,6 +347,9 @@ const Users: React.FC = () => {
 
         if (companyError) console.error('Error assigning companies:', companyError);
       }
+
+      // Save permissions
+      try { await savePermissionsForUser(editingUser.id, userForm.role); } catch (e) { console.error(e); }
 
       toast.success('User updated successfully');
       setUserDialogOpen(false);
