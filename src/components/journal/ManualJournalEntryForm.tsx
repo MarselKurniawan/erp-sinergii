@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 import { cn } from '@/lib/utils';
 
 interface Account {
@@ -135,21 +136,8 @@ export const ManualJournalEntryForm: React.FC<ManualJournalEntryFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Generate entry number
-      const { data: lastEntry } = await supabase
-        .from('journal_entries')
-        .select('entry_number')
-        .eq('company_id', selectedCompany.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      let nextNumber = 1;
-      if (lastEntry?.entry_number) {
-        const match = lastEntry.entry_number.match(/JE-(\d+)/);
-        if (match) nextNumber = parseInt(match[1]) + 1;
-      }
-      const entryNumber = `JE-${String(nextNumber).padStart(5, '0')}`;
+      // Auto-generate entry number via DB sequence
+      const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
 
       // Create journal entry
       const { data: entry, error: entryError } = await supabase

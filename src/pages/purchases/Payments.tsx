@@ -163,13 +163,8 @@ export const PurchasePayments: React.FC = () => {
     }
   };
 
-  const generatePaymentNumber = () => {
-    const date = new Date();
-    const prefix = 'PAY-OUT';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `${prefix}-${year}${month}-${random}`;
+  const generatePaymentNumber = async () => {
+    return await generateDocumentNumber(selectedCompany!.id, 'PAY-OUT');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,7 +177,7 @@ export const PurchasePayments: React.FC = () => {
       return;
     }
 
-    const paymentNumber = generatePaymentNumber();
+    const paymentNumber = await generatePaymentNumber();
 
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
@@ -236,8 +231,7 @@ export const PurchasePayments: React.FC = () => {
     }
 
     // Create journal entry
-    const date = new Date();
-    const entryNumber = `JE-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
     
     const supplier = suppliers.find(s => s.id === formData.supplier_id);
 
