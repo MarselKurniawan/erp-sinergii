@@ -116,7 +116,7 @@ export default function StockCard() {
                 ...products.map((p) => ({ value: p.id, label: `${p.sku} - ${p.name}` })),
               ]}
               value={productId}
-              onValueChange={setProductId}
+              onChange={setProductId}
               placeholder="Pilih produk"
             />
           </div>
