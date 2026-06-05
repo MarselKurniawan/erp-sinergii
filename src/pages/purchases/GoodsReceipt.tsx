@@ -265,6 +265,18 @@ export const GoodsReceipt: React.FC = () => {
     setIsViewDialogOpen(true);
   };
 
+  const handleCreateBill = async (receipt: GoodsReceipt) => {
+    if (!confirm(`Buat Bill otomatis dari GR ${receipt.receipt_number}?`)) return;
+    const { data, error } = await supabase.rpc('create_bill_from_goods_receipt', {
+      p_gr_id: receipt.id,
+    });
+    if (error) {
+      toast.error(error.message || 'Gagal membuat bill');
+      return;
+    }
+    toast.success('Bill berhasil dibuat dari GR');
+  };
+
   const filteredReceipts = receipts.filter(receipt =>
     receipt.receipt_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
     receipt.purchase_orders?.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
