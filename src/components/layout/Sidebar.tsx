@@ -74,6 +74,7 @@ const menuItems: MenuItem[] = [
       { label: 'Materials (Purchase)', path: '/inventory/materials' },
       { label: 'Recipe / BOM', path: '/inventory/recipes' },
       { label: 'Stock per Warehouse', path: '/inventory/stock' },
+      { label: 'Kartu Stok', path: '/inventory/stock-card' },
       { label: 'Transfers', path: '/inventory/transfers' },
       { label: 'Stock Opname', path: '/inventory/opname' },
       { label: 'Inventory Report', path: '/reports/inventory' },

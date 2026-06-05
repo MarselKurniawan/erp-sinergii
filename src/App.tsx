@@ -31,6 +31,7 @@ import Warehouses from "./pages/inventory/Warehouses";
 import InventoryStock from "./pages/inventory/InventoryStock";
 import StockTransfers from "./pages/inventory/StockTransfers";
 import StockOpname from "./pages/inventory/StockOpname";
+import StockCard from "./pages/inventory/StockCard";
 import JournalEntries from "./pages/JournalEntries";
 import ProfitLoss from "./pages/reports/ProfitLoss";
 import BalanceSheet from "./pages/reports/BalanceSheet";
@@ -102,6 +103,7 @@ const App = () => (
                 <Route path="/inventory/warehouses" element={<Warehouses />} />
                 <Route path="/inventory/stock" element={<InventoryStock />} />
                 <Route path="/inventory/transfers" element={<StockTransfers />} />
+                <Route path="/inventory/stock-card" element={<StockCard />} />
                 <Route path="/inventory/opname" element={<StockOpname />} />
                 <Route path="/inventory/recipes" element={<Recipes />} />
                 {/* POS Routes */}

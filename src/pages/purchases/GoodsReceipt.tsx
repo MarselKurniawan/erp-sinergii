@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Eye, Package, CheckCircle } from 'lucide-react';
+import { Plus, Search, Eye, Package, CheckCircle, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -265,6 +265,18 @@ export const GoodsReceipt: React.FC = () => {
     setIsViewDialogOpen(true);
   };
 
+  const handleCreateBill = async (receipt: GoodsReceipt) => {
+    if (!confirm(`Buat Bill otomatis dari GR ${receipt.receipt_number}?`)) return;
+    const { data, error } = await supabase.rpc('create_bill_from_goods_receipt', {
+      p_gr_id: receipt.id,
+    });
+    if (error) {
+      toast.error(error.message || 'Gagal membuat bill');
+      return;
+    }
+    toast.success('Bill berhasil dibuat dari GR');
+  };
+
   const filteredReceipts = receipts.filter(receipt =>
     receipt.receipt_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
     receipt.purchase_orders?.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -379,8 +391,17 @@ export const GoodsReceipt: React.FC = () => {
                       <td className="px-4 py-3 text-sm">{formatDate(receipt.receipt_date)}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleView(receipt)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleView(receipt)} title="Lihat detail">
                             <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary"
+                            title="Buat Bill dari GR ini"
+                            onClick={() => handleCreateBill(receipt)}
+                          >
+                            <FileText className="w-4 h-4" />
                           </Button>
                         </div>
                       </td>

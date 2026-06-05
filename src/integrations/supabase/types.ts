@@ -580,28 +580,40 @@ export type Database = {
       }
       goods_receipt_items: {
         Row: {
+          billed_quantity: number | null
           created_at: string
           id: string
           product_id: string
+          purchase_order_item_id: string | null
           quantity_ordered: number
           quantity_received: number
           receipt_id: string
+          unit_cost: number | null
+          warehouse_id: string | null
         }
         Insert: {
+          billed_quantity?: number | null
           created_at?: string
           id?: string
           product_id: string
+          purchase_order_item_id?: string | null
           quantity_ordered?: number
           quantity_received?: number
           receipt_id: string
+          unit_cost?: number | null
+          warehouse_id?: string | null
         }
         Update: {
+          billed_quantity?: number | null
           created_at?: string
           id?: string
           product_id?: string
+          purchase_order_item_id?: string | null
           quantity_ordered?: number
           quantity_received?: number
           receipt_id?: string
+          unit_cost?: number | null
+          warehouse_id?: string | null
         }
         Relationships: [
           {
@@ -631,6 +643,7 @@ export type Database = {
           receipt_date: string
           receipt_number: string
           updated_at: string
+          warehouse_id: string | null
         }
         Insert: {
           company_id: string
@@ -642,6 +655,7 @@ export type Database = {
           receipt_date?: string
           receipt_number: string
           updated_at?: string
+          warehouse_id?: string | null
         }
         Update: {
           company_id?: string
@@ -653,6 +667,7 @@ export type Database = {
           receipt_date?: string
           receipt_number?: string
           updated_at?: string
+          warehouse_id?: string | null
         }
         Relationships: [
           {
@@ -667,6 +682,68 @@ export type Database = {
             columns: ["purchase_order_id"]
             isOneToOne: false
             referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_movements: {
+        Row: {
+          balance_after: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          movement_date: string
+          movement_type: string
+          notes: string | null
+          product_id: string
+          quantity: number
+          reference_id: string | null
+          reference_number: string | null
+          reference_type: string | null
+          unit_cost: number | null
+          warehouse_id: string | null
+        }
+        Insert: {
+          balance_after?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_date?: string
+          movement_type: string
+          notes?: string | null
+          product_id: string
+          quantity: number
+          reference_id?: string | null
+          reference_number?: string | null
+          reference_type?: string | null
+          unit_cost?: number | null
+          warehouse_id?: string | null
+        }
+        Update: {
+          balance_after?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_date?: string
+          movement_type?: string
+          notes?: string | null
+          product_id?: string
+          quantity?: number
+          reference_id?: string | null
+          reference_number?: string | null
+          reference_type?: string | null
+          unit_cost?: number | null
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -2115,9 +2192,11 @@ export type Database = {
           created_at: string
           discount_percent: number | null
           id: string
+          invoiced_quantity: number | null
           product_id: string
           purchase_order_id: string
           quantity: number
+          received_quantity: number | null
           tax_percent: number | null
           total: number
           unit_price: number
@@ -2126,9 +2205,11 @@ export type Database = {
           created_at?: string
           discount_percent?: number | null
           id?: string
+          invoiced_quantity?: number | null
           product_id: string
           purchase_order_id: string
           quantity?: number
+          received_quantity?: number | null
           tax_percent?: number | null
           total: number
           unit_price: number
@@ -2137,9 +2218,11 @@ export type Database = {
           created_at?: string
           discount_percent?: number | null
           id?: string
+          invoiced_quantity?: number | null
           product_id?: string
           purchase_order_id?: string
           quantity?: number
+          received_quantity?: number | null
           tax_percent?: number | null
           total?: number
           unit_price?: number
@@ -2451,6 +2534,7 @@ export type Database = {
           created_at: string
           discount_percent: number | null
           id: string
+          invoiced_quantity: number | null
           product_id: string
           quantity: number
           sales_order_id: string
@@ -2462,6 +2546,7 @@ export type Database = {
           created_at?: string
           discount_percent?: number | null
           id?: string
+          invoiced_quantity?: number | null
           product_id: string
           quantity?: number
           sales_order_id: string
@@ -2473,6 +2558,7 @@ export type Database = {
           created_at?: string
           discount_percent?: number | null
           id?: string
+          invoiced_quantity?: number | null
           product_id?: string
           quantity?: number
           sales_order_id?: string
@@ -3021,6 +3107,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_bill_from_goods_receipt: {
+        Args: { p_bill_date?: string; p_due_date?: string; p_gr_id: string }
+        Returns: string
+      }
+      create_invoice_from_sales_order: {
+        Args: {
+          p_due_date?: string
+          p_invoice_date?: string
+          p_quantities?: Json
+          p_sales_order_id: string
+        }
+        Returns: string
+      }
       generate_document_number: {
         Args: { p_company_id: string; p_document_type: string }
         Returns: string
