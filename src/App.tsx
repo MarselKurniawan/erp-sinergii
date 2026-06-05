@@ -103,6 +103,7 @@ const App = () => (
                 <Route path="/inventory/warehouses" element={<Warehouses />} />
                 <Route path="/inventory/stock" element={<InventoryStock />} />
                 <Route path="/inventory/transfers" element={<StockTransfers />} />
+                <Route path="/inventory/stock-card" element={<StockCard />} />
                 <Route path="/inventory/opname" element={<StockOpname />} />
                 <Route path="/inventory/recipes" element={<Recipes />} />
                 {/* POS Routes */}
