@@ -379,8 +379,17 @@ export const GoodsReceipt: React.FC = () => {
                       <td className="px-4 py-3 text-sm">{formatDate(receipt.receipt_date)}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleView(receipt)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleView(receipt)} title="Lihat detail">
                             <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary"
+                            title="Buat Bill dari GR ini"
+                            onClick={() => handleCreateBill(receipt)}
+                          >
+                            <FileText className="w-4 h-4" />
                           </Button>
                         </div>
                       </td>
