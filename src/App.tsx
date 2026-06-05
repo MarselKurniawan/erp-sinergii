@@ -31,6 +31,7 @@ import Warehouses from "./pages/inventory/Warehouses";
 import InventoryStock from "./pages/inventory/InventoryStock";
 import StockTransfers from "./pages/inventory/StockTransfers";
 import StockOpname from "./pages/inventory/StockOpname";
+import StockCard from "./pages/inventory/StockCard";
 import JournalEntries from "./pages/JournalEntries";
 import ProfitLoss from "./pages/reports/ProfitLoss";
 import BalanceSheet from "./pages/reports/BalanceSheet";
