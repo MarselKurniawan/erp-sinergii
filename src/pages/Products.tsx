@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit2, Trash2, Package, Archive, Settings, FolderOpen, Upload } from 'lucide-react';
+import { Plus, Search, Filter, Edit2, Trash2, Package, Archive, Settings, FolderOpen, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProductCSVImport } from '@/components/products/ProductCSVImport';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
@@ -7,6 +7,14 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
