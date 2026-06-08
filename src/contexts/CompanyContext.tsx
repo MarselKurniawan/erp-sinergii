@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Company, getUserCompanies } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -14,41 +14,62 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading: authLoading } = useAuth();
+  const userId = user?.id ?? null;
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const loadedUserIdRef = useRef<string | null>(null);
 
-  const refreshCompanies = async () => {
-    if (!user) {
+  const refreshCompanies = useCallback(async () => {
+    if (!userId) {
       setCompanies([]);
       setSelectedCompany(null);
       setIsLoading(false);
+      loadedUserIdRef.current = null;
       return;
     }
 
-    setIsLoading(true);
-    const userCompanies = await getUserCompanies(user.id);
+    if (loadedUserIdRef.current !== userId) {
+      setIsLoading(true);
+    }
+
+    const userCompanies = await getUserCompanies(userId);
     setCompanies(userCompanies);
 
-    // Auto-select company from localStorage or first available
     const savedCompanyId = localStorage.getItem('selectedCompanyId');
-    const savedCompany = userCompanies.find(c => c.id === savedCompanyId);
-    
-    if (savedCompany) {
-      setSelectedCompany(savedCompany);
-    } else if (userCompanies.length === 1) {
-      setSelectedCompany(userCompanies[0]);
-      localStorage.setItem('selectedCompanyId', userCompanies[0].id);
-    }
-    
+    const savedCompany = userCompanies.find((company) => company.id === savedCompanyId) ?? null;
+
+    setSelectedCompany((currentSelectedCompany) => {
+      const currentCompany = currentSelectedCompany
+        ? userCompanies.find((company) => company.id === currentSelectedCompany.id) ?? null
+        : null;
+
+      if (currentCompany) {
+        return currentSelectedCompany;
+      }
+
+      if (savedCompany) {
+        return savedCompany;
+      }
+
+      if (userCompanies.length === 1) {
+        localStorage.setItem('selectedCompanyId', userCompanies[0].id);
+        return userCompanies[0];
+      }
+
+      localStorage.removeItem('selectedCompanyId');
+      return null;
+    });
+
     setIsLoading(false);
-  };
+    loadedUserIdRef.current = userId;
+  }, [userId]);
 
   useEffect(() => {
     if (!authLoading) {
       refreshCompanies();
     }
-  }, [user, authLoading]);
+  }, [authLoading, refreshCompanies]);
 
   const handleSetSelectedCompany = (company: Company) => {
     setSelectedCompany(company);
