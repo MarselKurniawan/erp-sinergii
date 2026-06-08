@@ -338,6 +338,20 @@ export const Products: React.FC = () => {
     return matchesSearch && matchesType;
   });
 
+  // Sort by category, then by name
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const catA = a.category?.name || 'zzz';
+    const catB = b.category?.name || 'zzz';
+    if (catA !== catB) return catA.localeCompare(catB);
+    return a.name.localeCompare(b.name);
+  });
+
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+  const paginatedProducts = sortedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   // Get available accounts
   const revenueAccounts = getRevenueAccounts();
   const cogsAccounts = [...getCogsAccounts(), ...getExpenseAccounts()];
