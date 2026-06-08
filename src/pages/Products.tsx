@@ -682,117 +682,133 @@ export const Products: React.FC = () => {
         </div>
       </div>
 
-      {/* Products Grid */}
-      {isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading products...</div>
-      ) : filteredProducts.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No products found</h3>
-              <p className="text-muted-foreground">
-                {searchQuery || filterType !== 'all' 
-                  ? 'Try adjusting your search or filter'
-                  : 'Get started by adding your first product'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProducts.map((product, index) => (
-            <Card 
-              key={product.id} 
-              className="animate-fade-in hover:shadow-lg transition-all"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      'w-10 h-10 rounded-lg flex items-center justify-center',
-                      product.product_type === 'stockable' 
-                        ? 'bg-primary/10 text-primary' 
-                        : 'bg-secondary/10 text-secondary-foreground'
-                    )}>
-                      {product.product_type === 'stockable' ? (
-                        <Package className="w-5 h-5" />
+      {/* Products Table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>SKU</TableHead>
+                <TableHead>Nama Produk</TableHead>
+                <TableHead>Kategori</TableHead>
+                <TableHead>Tipe</TableHead>
+                <TableHead className="text-right">Harga Jual</TableHead>
+                <TableHead className="text-right">Harga Beli</TableHead>
+                <TableHead className="text-right">Stok</TableHead>
+                <TableHead className="w-[100px]">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                    Loading products...
+                  </TableCell>
+                </TableRow>
+              ) : paginatedProducts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-12">
+                    <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No products found</h3>
+                    <p className="text-muted-foreground">
+                      {searchQuery || filterType !== 'all'
+                        ? 'Try adjusting your search or filter'
+                        : 'Get started by adding your first product'}
+                    </p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-mono text-xs">{product.sku}</TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>
+                      {product.category ? (
+                        <span className="text-sm">{product.category.name}</span>
                       ) : (
-                        <Archive className="w-5 h-5" />
+                        <span className="text-sm text-muted-foreground">-</span>
                       )}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground line-clamp-1">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground">{product.sku}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(product)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(product.id)}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Sell Price</span>
-                    <span className="font-medium">{formatCurrency(product.unit_price)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Cost Price</span>
-                    <span className="font-medium">{formatCurrency(product.cost_price)}</span>
-                  </div>
-                  {product.product_type === 'stockable' && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Stock</span>
+                    </TableCell>
+                    <TableCell>
                       <span className={cn(
-                        'font-medium',
-                        product.stock_quantity <= 0 ? 'text-destructive' : 'text-foreground'
+                        'text-xs px-2 py-1 rounded-full',
+                        product.product_type === 'stockable'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-muted text-muted-foreground'
                       )}>
-                        {product.stock_quantity} {product.unit}
+                        {product.product_type === 'stockable' ? 'Stockable' : product.product_type === 'raw_material' ? 'Raw Material' : 'Service'}
                       </span>
-                    </div>
-                  )}
-                  {product.category && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Category</span>
-                      <span className="font-medium">{product.category.name}</span>
-                    </div>
-                  )}
-                </div>
+                    </TableCell>
+                    <TableCell className="text-right">{formatCurrency(product.unit_price)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(product.cost_price)}</TableCell>
+                    <TableCell className="text-right">
+                      {product.product_type === 'stockable' ? (
+                        <span className={cn(
+                          product.stock_quantity <= 0 ? 'text-destructive font-medium' : ''
+                        )}>
+                          {product.stock_quantity} {product.unit}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(product)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(product.id)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-                <div className="mt-3 pt-3 border-t flex items-center gap-2">
-                  <span className={cn(
-                    'text-xs px-2 py-1 rounded-full',
-                    product.product_type === 'stockable'
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  )}>
-                    {product.product_type === 'stockable' ? 'Stockable' : 'Service'}
-                  </span>
-                  {product.revenue_account && (
-                    <span className="text-xs text-muted-foreground">
-                      Rev: {product.revenue_account.code}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      {/* Pagination */}
+      {!isLoading && sortedProducts.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, sortedProducts.length)} - {Math.min(currentPage * itemsPerPage, sortedProducts.length)} dari {sortedProducts.length} produk
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Prev
+            </Button>
+            <span className="text-sm text-muted-foreground px-2">
+              Halaman {currentPage} dari {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       )}
 
