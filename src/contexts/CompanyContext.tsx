@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Company, getUserCompanies } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -14,25 +14,26 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading: authLoading } = useAuth();
+  const userId = user?.id ?? null;
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasInitialized, setHasInitialized] = useState(false);
+  const loadedUserIdRef = useRef<string | null>(null);
 
   const refreshCompanies = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setCompanies([]);
       setSelectedCompany(null);
       setIsLoading(false);
-      setHasInitialized(true);
+      loadedUserIdRef.current = null;
       return;
     }
 
-    if (!hasInitialized) {
+    if (loadedUserIdRef.current !== userId) {
       setIsLoading(true);
     }
 
-    const userCompanies = await getUserCompanies(user.id);
+    const userCompanies = await getUserCompanies(userId);
     setCompanies(userCompanies);
 
     const savedCompanyId = localStorage.getItem('selectedCompanyId');
@@ -56,18 +57,19 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return userCompanies[0];
       }
 
+      localStorage.removeItem('selectedCompanyId');
       return null;
     });
 
     setIsLoading(false);
-    setHasInitialized(true);
-  }, [hasInitialized, user]);
+    loadedUserIdRef.current = userId;
+  }, [userId]);
 
   useEffect(() => {
     if (!authLoading) {
       refreshCompanies();
     }
-  }, [user?.id, authLoading, refreshCompanies]);
+  }, [authLoading, refreshCompanies]);
 
   const handleSetSelectedCompany = (company: Company) => {
     setSelectedCompany(company);

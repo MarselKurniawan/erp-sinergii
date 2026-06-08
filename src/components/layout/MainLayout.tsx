@@ -9,7 +9,7 @@ const MainLayoutComponent: React.FC = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { selectedCompany, isLoading: companyLoading, companies } = useCompany();
 
-  if (authLoading || (companyLoading && !user)) {
+  if (authLoading || companyLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
