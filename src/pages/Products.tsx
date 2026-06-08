@@ -146,6 +146,11 @@ export const Products: React.FC = () => {
     fetchCategories();
   }, [selectedCompany]);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterType]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCompany) return;
