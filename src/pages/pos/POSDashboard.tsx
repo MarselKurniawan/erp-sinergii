@@ -351,11 +351,24 @@ const POSDashboard = () => {
     }
   }, [cart, appliedPromo]);
 
-  // Calculate total tax rate from selected taxes
+  // Calculate total tax rate from selected taxes (global fallback)
   const getTotalTaxRate = () => {
     return taxRates
       .filter(t => selectedTaxIds.includes(t.id))
       .reduce((sum, t) => sum + t.rate, 0);
+  };
+
+  // Resolve per-product tax rate: gunakan tarif yang ditempel di produk;
+  // jika produk belum punya pengaturan, fallback ke global selected taxes.
+  const getProductTaxRate = (product: any): number => {
+    const productTaxIds: string[] = (product?.product_tax_rates || [])
+      .map((r: any) => r.tax_rate_id);
+    if (productTaxIds.length > 0) {
+      return taxRates
+        .filter(t => productTaxIds.includes(t.id))
+        .reduce((sum, t) => sum + t.rate, 0);
+    }
+    return getTotalTaxRate();
   };
 
   const filteredProducts = products.filter(p => 
@@ -368,7 +381,7 @@ const POSDashboard = () => {
     if (existingItem) {
       updateQuantity(product.id, 1);
     } else {
-      const totalTaxRate = getTotalTaxRate();
+      const totalTaxRate = getProductTaxRate(product);
       const newItem: CartItem = {
         product_id: product.id,
         name: product.name,
@@ -389,7 +402,8 @@ const POSDashboard = () => {
     }
   };
 
-  // Toggle tax selection and update cart
+  // Toggle tax selection (global default). Hanya mempengaruhi item yang
+  // produknya belum punya pengaturan tarif sendiri.
   const toggleTaxSelection = (taxId: string) => {
     const newSelectedIds = selectedTaxIds.includes(taxId)
       ? selectedTaxIds.filter(id => id !== taxId)
@@ -397,13 +411,16 @@ const POSDashboard = () => {
     
     setSelectedTaxIds(newSelectedIds);
     
-    // Recalculate all cart items with new tax rate
-    const newTotalTaxRate = taxRates
+    const newGlobalRate = taxRates
       .filter(t => newSelectedIds.includes(t.id))
       .reduce((sum, t) => sum + t.rate, 0);
     
     setCart(cart.map(item => {
-      const updated = { ...item, tax_percent: newTotalTaxRate };
+      const prod = products.find((p: any) => p.id === item.product_id) as any;
+      const productTaxIds: string[] = (prod?.product_tax_rates || []).map((r: any) => r.tax_rate_id);
+      // Jika produk punya tarif sendiri, jangan diubah oleh toggle global
+      if (productTaxIds.length > 0) return item;
+      const updated = { ...item, tax_percent: newGlobalRate };
       recalculateItem(updated);
       return updated;
     }));

@@ -43,6 +43,13 @@ interface Category {
   description?: string | null;
 }
 
+interface TaxRateOption {
+  id: string;
+  name: string;
+  rate: number;
+  category: string;
+}
+
 interface Product {
   id: string;
   sku: string;
@@ -59,6 +66,7 @@ interface Product {
   category?: Category;
   revenue_account?: { id: string; code: string; name: string };
   cogs_account?: { id: string; code: string; name: string };
+  product_tax_rates?: { tax_rate_id: string }[];
 }
 
 const formatCurrency = (value: number) => {
@@ -74,6 +82,7 @@ export const Products: React.FC = () => {
   const { accounts, getRevenueAccounts, getCogsAccounts, getExpenseAccounts } = useAccounts();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [taxRates, setTaxRates] = useState<TaxRateOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
@@ -103,6 +112,7 @@ export const Products: React.FC = () => {
     stock_quantity: '',
     revenue_account_id: '',
     cogs_account_id: '',
+    tax_rate_ids: [] as string[],
   });
 
   const fetchProducts = async () => {
@@ -115,7 +125,8 @@ export const Products: React.FC = () => {
         *,
         category:product_categories(id, name),
         revenue_account:chart_of_accounts!products_revenue_account_id_fkey(id, code, name),
-        cogs_account:chart_of_accounts!products_cogs_account_id_fkey(id, code, name)
+        cogs_account:chart_of_accounts!products_cogs_account_id_fkey(id, code, name),
+        product_tax_rates(tax_rate_id)
       `)
       .eq('company_id', selectedCompany.id)
       .order('name');
@@ -124,7 +135,7 @@ export const Products: React.FC = () => {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
     } else {
-      setProducts(data || []);
+      setProducts((data as any) || []);
     }
     setIsLoading(false);
   };
@@ -141,15 +152,37 @@ export const Products: React.FC = () => {
     setCategories(data || []);
   };
 
+  const fetchTaxRates = async () => {
+    if (!selectedCompany) return;
+    const { data } = await supabase
+      .from('pos_tax_rates')
+      .select('id, name, rate, category')
+      .eq('company_id', selectedCompany.id)
+      .eq('is_active', true)
+      .order('category')
+      .order('name');
+    setTaxRates((data as any) || []);
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchTaxRates();
   }, [selectedCompany]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterType]);
+
+  const syncProductTaxRates = async (productId: string, taxRateIds: string[]) => {
+    await supabase.from('product_tax_rates').delete().eq('product_id', productId);
+    if (taxRateIds.length > 0) {
+      await supabase.from('product_tax_rates').insert(
+        taxRateIds.map(tid => ({ product_id: productId, tax_rate_id: tid }))
+      );
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,16 +210,19 @@ export const Products: React.FC = () => {
       if (error) {
         toast.error('Failed to update product');
       } else {
+        await syncProductTaxRates(editingProduct.id, formData.tax_rate_ids);
         toast.success('Product updated successfully');
         fetchProducts();
       }
     } else {
-      const { error } = await supabase
+      const { data: created, error } = await supabase
         .from('products')
         .insert({
           ...productData,
           company_id: selectedCompany.id,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) {
         if (error.code === '23505') {
@@ -195,6 +231,9 @@ export const Products: React.FC = () => {
           toast.error('Failed to create product');
         }
       } else {
+        if (created?.id) {
+          await syncProductTaxRates(created.id, formData.tax_rate_ids);
+        }
         toast.success('Product created successfully');
         fetchProducts();
       }
@@ -217,6 +256,7 @@ export const Products: React.FC = () => {
       stock_quantity: '',
       revenue_account_id: '',
       cogs_account_id: '',
+      tax_rate_ids: [],
     });
   };
 
@@ -233,9 +273,11 @@ export const Products: React.FC = () => {
       stock_quantity: product.stock_quantity.toString(),
       revenue_account_id: product.revenue_account_id || '',
       cogs_account_id: product.cogs_account_id || '',
+      tax_rate_ids: (product.product_tax_rates || []).map(r => r.tax_rate_id),
     });
     setIsDialogOpen(true);
   };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
@@ -641,6 +683,54 @@ export const Products: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Pajak & Service per Produk */}
+                <div className="border-t pt-4 mt-4">
+                  <h3 className="font-semibold text-foreground mb-1">Pajak & Service</h3>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Pilih tarif Pajak / Service yang otomatis diterapkan saat produk dijual di POS. Master tarif dikelola di menu Tax & Services.
+                  </p>
+                  {taxRates.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic">
+                      Belum ada tarif. Tambahkan dulu di menu POS &gt; Tax &amp; Services.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {taxRates.map((tax) => {
+                        const checked = formData.tax_rate_ids.includes(tax.id);
+                        return (
+                          <label
+                            key={tax.id}
+                            className={cn(
+                              'flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50',
+                              checked && 'border-primary bg-primary/5'
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...formData.tax_rate_ids, tax.id]
+                                  : formData.tax_rate_ids.filter((id) => id !== tax.id);
+                                setFormData({ ...formData, tax_rate_ids: next });
+                              }}
+                            />
+                            <span className="text-sm flex-1">
+                              <span className="font-medium">{tax.name}</span>{' '}
+                              <span className="text-muted-foreground">({tax.rate}%)</span>
+                              <span className="ml-2 text-[10px] uppercase text-muted-foreground">
+                                {tax.category}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+
 
                 <div className="flex gap-3 pt-4">
                   <Button
