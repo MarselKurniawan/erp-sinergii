@@ -125,7 +125,8 @@ export const Products: React.FC = () => {
         *,
         category:product_categories(id, name),
         revenue_account:chart_of_accounts!products_revenue_account_id_fkey(id, code, name),
-        cogs_account:chart_of_accounts!products_cogs_account_id_fkey(id, code, name)
+        cogs_account:chart_of_accounts!products_cogs_account_id_fkey(id, code, name),
+        product_tax_rates(tax_rate_id)
       `)
       .eq('company_id', selectedCompany.id)
       .order('name');
@@ -134,7 +135,7 @@ export const Products: React.FC = () => {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
     } else {
-      setProducts(data || []);
+      setProducts((data as any) || []);
     }
     setIsLoading(false);
   };
@@ -151,15 +152,37 @@ export const Products: React.FC = () => {
     setCategories(data || []);
   };
 
+  const fetchTaxRates = async () => {
+    if (!selectedCompany) return;
+    const { data } = await supabase
+      .from('pos_tax_rates')
+      .select('id, name, rate, category')
+      .eq('company_id', selectedCompany.id)
+      .eq('is_active', true)
+      .order('category')
+      .order('name');
+    setTaxRates((data as any) || []);
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchTaxRates();
   }, [selectedCompany]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterType]);
+
+  const syncProductTaxRates = async (productId: string, taxRateIds: string[]) => {
+    await supabase.from('product_tax_rates').delete().eq('product_id', productId);
+    if (taxRateIds.length > 0) {
+      await supabase.from('product_tax_rates').insert(
+        taxRateIds.map(tid => ({ product_id: productId, tax_rate_id: tid }))
+      );
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,16 +210,19 @@ export const Products: React.FC = () => {
       if (error) {
         toast.error('Failed to update product');
       } else {
+        await syncProductTaxRates(editingProduct.id, formData.tax_rate_ids);
         toast.success('Product updated successfully');
         fetchProducts();
       }
     } else {
-      const { error } = await supabase
+      const { data: created, error } = await supabase
         .from('products')
         .insert({
           ...productData,
           company_id: selectedCompany.id,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) {
         if (error.code === '23505') {
@@ -205,6 +231,9 @@ export const Products: React.FC = () => {
           toast.error('Failed to create product');
         }
       } else {
+        if (created?.id) {
+          await syncProductTaxRates(created.id, formData.tax_rate_ids);
+        }
         toast.success('Product created successfully');
         fetchProducts();
       }
@@ -227,6 +256,7 @@ export const Products: React.FC = () => {
       stock_quantity: '',
       revenue_account_id: '',
       cogs_account_id: '',
+      tax_rate_ids: [],
     });
   };
 
@@ -243,9 +273,11 @@ export const Products: React.FC = () => {
       stock_quantity: product.stock_quantity.toString(),
       revenue_account_id: product.revenue_account_id || '',
       cogs_account_id: product.cogs_account_id || '',
+      tax_rate_ids: (product.product_tax_rates || []).map(r => r.tax_rate_id),
     });
     setIsDialogOpen(true);
   };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
