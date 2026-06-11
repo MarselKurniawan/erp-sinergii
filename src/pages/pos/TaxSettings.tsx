@@ -528,23 +528,17 @@ const TaxSettings = () => {
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Akun Pencatatan</Label>
-                <Select 
-                  value={formData.account_id || "none"} 
-                  onValueChange={(v) => setFormData({ ...formData, account_id: v === "none" ? "" : v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih akun" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tidak ada</SelectItem>
-                    {accounts.map(acc => (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        {acc.code} - {acc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Akun Pendapatan</Label>
+                <SearchableSelect
+                  options={revenueAccountOptions}
+                  value={formData.account_id}
+                  onChange={(v) => setFormData({ ...formData, account_id: v })}
+                  placeholder="Pilih akun pendapatan"
+                  searchPlaceholder="Cari akun..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Mengikuti akun revenue produk (general untuk semua sektor)
+                </p>
               </div>
             </div>
 
