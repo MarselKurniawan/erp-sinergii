@@ -2074,6 +2074,42 @@ export type Database = {
           },
         ]
       }
+      product_tax_rates: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          tax_rate_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          tax_rate_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          tax_rate_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tax_rates_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_tax_rates_tax_rate_id_fkey"
+            columns: ["tax_rate_id"]
+            isOneToOne: false
+            referencedRelation: "pos_tax_rates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category_id: string | null
