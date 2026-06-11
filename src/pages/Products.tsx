@@ -82,6 +82,7 @@ export const Products: React.FC = () => {
   const { accounts, getRevenueAccounts, getCogsAccounts, getExpenseAccounts } = useAccounts();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [taxRates, setTaxRates] = useState<TaxRateOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
@@ -111,6 +112,7 @@ export const Products: React.FC = () => {
     stock_quantity: '',
     revenue_account_id: '',
     cogs_account_id: '',
+    tax_rate_ids: [] as string[],
   });
 
   const fetchProducts = async () => {
