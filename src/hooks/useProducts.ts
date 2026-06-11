@@ -15,6 +15,7 @@ export interface Product {
   revenue_account_id: string | null;
   cogs_account_id: string | null;
   category_id: string | null;
+  product_tax_rates?: { tax_rate_id: string }[];
 }
 
 export const useProducts = () => {
@@ -28,13 +29,13 @@ export const useProducts = () => {
     setIsLoading(true);
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, product_tax_rates(tax_rate_id)')
       .eq('company_id', selectedCompany.id)
       .eq('is_active', true)
       .order('name');
 
     if (!error) {
-      setProducts(data || []);
+      setProducts((data as any) || []);
     }
     setIsLoading(false);
   };
