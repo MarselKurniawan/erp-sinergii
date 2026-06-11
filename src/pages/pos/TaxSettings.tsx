@@ -31,7 +31,8 @@ interface TaxRate {
 
 const TaxSettings = () => {
   const { selectedCompany } = useCompany();
-  const { accounts } = useAccounts();
+  const { accounts, getRevenueAccounts } = useAccounts();
+  const revenueAccountOptions = getRevenueAccounts().map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }));
 
   const [taxRates, setTaxRates] = useState<TaxRate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
