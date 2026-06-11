@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +31,8 @@ interface TaxRate {
 
 const TaxSettings = () => {
   const { selectedCompany } = useCompany();
-  const { accounts } = useAccounts();
+  const { accounts, getRevenueAccounts } = useAccounts();
+  const revenueAccountOptions = getRevenueAccounts().map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }));
 
   const [taxRates, setTaxRates] = useState<TaxRate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -526,23 +528,17 @@ const TaxSettings = () => {
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Akun Pencatatan</Label>
-                <Select 
-                  value={formData.account_id || "none"} 
-                  onValueChange={(v) => setFormData({ ...formData, account_id: v === "none" ? "" : v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih akun" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tidak ada</SelectItem>
-                    {accounts.map(acc => (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        {acc.code} - {acc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Akun Pendapatan</Label>
+                <SearchableSelect
+                  options={revenueAccountOptions}
+                  value={formData.account_id}
+                  onChange={(v) => setFormData({ ...formData, account_id: v })}
+                  placeholder="Pilih akun pendapatan"
+                  searchPlaceholder="Cari akun..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Mengikuti akun revenue produk (general untuk semua sektor)
+                </p>
               </div>
             </div>
 
