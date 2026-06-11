@@ -43,6 +43,13 @@ interface Category {
   description?: string | null;
 }
 
+interface TaxRateOption {
+  id: string;
+  name: string;
+  rate: number;
+  category: string;
+}
+
 interface Product {
   id: string;
   sku: string;
@@ -59,6 +66,7 @@ interface Product {
   category?: Category;
   revenue_account?: { id: string; code: string; name: string };
   cogs_account?: { id: string; code: string; name: string };
+  product_tax_rates?: { tax_rate_id: string }[];
 }
 
 const formatCurrency = (value: number) => {
