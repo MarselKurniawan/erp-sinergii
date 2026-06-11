@@ -684,6 +684,54 @@ export const Products: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Pajak & Service per Produk */}
+                <div className="border-t pt-4 mt-4">
+                  <h3 className="font-semibold text-foreground mb-1">Pajak & Service</h3>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Pilih tarif Pajak / Service yang otomatis diterapkan saat produk dijual di POS. Master tarif dikelola di menu Tax & Services.
+                  </p>
+                  {taxRates.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic">
+                      Belum ada tarif. Tambahkan dulu di menu POS &gt; Tax &amp; Services.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {taxRates.map((tax) => {
+                        const checked = formData.tax_rate_ids.includes(tax.id);
+                        return (
+                          <label
+                            key={tax.id}
+                            className={cn(
+                              'flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50',
+                              checked && 'border-primary bg-primary/5'
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...formData.tax_rate_ids, tax.id]
+                                  : formData.tax_rate_ids.filter((id) => id !== tax.id);
+                                setFormData({ ...formData, tax_rate_ids: next });
+                              }}
+                            />
+                            <span className="text-sm flex-1">
+                              <span className="font-medium">{tax.name}</span>{' '}
+                              <span className="text-muted-foreground">({tax.rate}%)</span>
+                              <span className="ml-2 text-[10px] uppercase text-muted-foreground">
+                                {tax.category}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+
+
                 <div className="flex gap-3 pt-4">
                   <Button
                     type="button"
