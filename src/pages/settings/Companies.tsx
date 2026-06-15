@@ -606,6 +606,30 @@ const Companies: React.FC = () => {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label>Metode Costing Inventory</Label>
+              <RadioGroup
+                value={formData.costing_method}
+                onValueChange={(v) => setFormData({ ...formData, costing_method: v as 'fifo' | 'average' })}
+                className="grid grid-cols-2 gap-3"
+              >
+                <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${formData.costing_method === 'average' ? 'border-primary bg-primary/5' : ''}`}>
+                  <RadioGroupItem value="average" className="mt-0.5" />
+                  <div>
+                    <div className="font-medium text-sm">Rata-rata (WAC)</div>
+                    <div className="text-xs text-muted-foreground">Weighted Average Cost. Cocok untuk barang sejenis dengan harga stabil.</div>
+                  </div>
+                </label>
+                <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${formData.costing_method === 'fifo' ? 'border-primary bg-primary/5' : ''}`}>
+                  <RadioGroupItem value="fifo" className="mt-0.5" />
+                  <div>
+                    <div className="font-medium text-sm">FIFO</div>
+                    <div className="text-xs text-muted-foreground">First In First Out. Akurat untuk barang dengan fluktuasi harga.</div>
+                  </div>
+                </label>
+              </RadioGroup>
+            </div>
+
             {!selectedCompany && (
               <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground mb-1">ℹ️ Informasi</p>
