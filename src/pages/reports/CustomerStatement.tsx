@@ -25,9 +25,11 @@ const CustomerStatement: React.FC = () => {
   useEffect(() => { if (customerId) void load(); /* eslint-disable-next-line */ }, [customerId, from, to]);
 
   const load = async () => {
-    const inv: any = await supabase.from('invoices').select('id, invoice_number, invoice_date, total_amount, paid_amount, outstanding_amount')
+    const q1: any = supabase.from('invoices');
+    const inv: any = await q1.select('id, invoice_number, invoice_date, total_amount, paid_amount, outstanding_amount')
       .eq('customer_id', customerId).gte('invoice_date', from).lte('invoice_date', to).order('invoice_date');
-    const pay: any = await supabase.from('payments').select('id, payment_number, payment_date, amount, type')
+    const q2: any = supabase.from('payments');
+    const pay: any = await q2.select('id, payment_number, payment_date, amount, type')
       .eq('customer_id', customerId).eq('type', 'receipt').gte('payment_date', from).lte('payment_date', to).order('payment_date');
 
     const items: any[] = [];
