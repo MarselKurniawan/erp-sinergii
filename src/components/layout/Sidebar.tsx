@@ -23,7 +23,8 @@ import {
   Lock,
   Tag,
   Store,
-  Landmark
+  Landmark,
+  Factory
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
