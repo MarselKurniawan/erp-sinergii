@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { SearchableSelect } from '@/components/SearchableSelect';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { formatCurrency } from '@/lib/formatters';
 import { toast } from 'sonner';
 
@@ -132,7 +132,7 @@ const BankReconciliation: React.FC = () => {
           <DialogHeader><DialogTitle>Statement Baru</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>Akun Bank</Label>
-              <SearchableSelect value={form.account_id} onValueChange={(v) => setForm({ ...form, account_id: v })}
+              <SearchableSelect value={form.account_id} onChange={(v) => setForm({ ...form, account_id: v })}
                 options={accounts.map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }))}
                 placeholder="Pilih akun bank" />
             </div>
