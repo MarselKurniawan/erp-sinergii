@@ -63,6 +63,12 @@ import PrinterSettings from "./pages/pos/PrinterSettings";
 import FixedAssets from "./pages/assets/FixedAssets";
 import TaxReport from "./pages/reports/TaxReport";
 import NotFound from "./pages/NotFound";
+import Permissions from "./pages/settings/Permissions";
+import { RequireFeature } from "@/components/RequireFeature";
+
+const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
+  <RequireFeature feature={f}>{children}</RequireFeature>
+);
 
 const queryClient = new QueryClient();
 
@@ -79,68 +85,61 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/select-company" element={<SelectCompany />} />
               <Route element={<MainLayout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/accounts" element={<ChartOfAccounts />} />
-                <Route path="/cash-bank" element={<CashBank />} />
-                <Route path="/cash-bank/cashflow" element={<Cashflow />} />
-                <Route path="/products" element={<Products />} />
-                {/* Sales Routes */}
-                <Route path="/sales/dashboard" element={<SalesDashboard />} />
-                <Route path="/sales/customers" element={<Customers />} />
-                <Route path="/sales/orders" element={<SalesOrders />} />
-                <Route path="/sales/invoices" element={<Invoices />} />
-                <Route path="/sales/payments" element={<SalesPayments />} />
-                {/* Purchases Routes */}
-                <Route path="/purchases/dashboard" element={<PurchasesDashboard />} />
-                <Route path="/purchases/suppliers" element={<Suppliers />} />
-                <Route path="/purchases/orders" element={<PurchaseOrders />} />
-                <Route path="/purchases/receipts" element={<GoodsReceipt />} />
-                <Route path="/purchases/bills" element={<Bills />} />
-                <Route path="/purchases/payments" element={<PurchasePayments />} />
-                {/* Inventory Routes */}
+                <Route path="/dashboard" element={<Guard f="dashboard"><Dashboard /></Guard>} />
+                <Route path="/accounts" element={<Guard f="accounts"><ChartOfAccounts /></Guard>} />
+                <Route path="/cash-bank" element={<Guard f="cash-bank"><CashBank /></Guard>} />
+                <Route path="/cash-bank/cashflow" element={<Guard f="cash-bank/cashflow"><Cashflow /></Guard>} />
+                <Route path="/products" element={<Guard f="products"><Products /></Guard>} />
+                <Route path="/sales/dashboard" element={<Guard f="sales/dashboard"><SalesDashboard /></Guard>} />
+                <Route path="/sales/customers" element={<Guard f="sales/customers"><Customers /></Guard>} />
+                <Route path="/sales/orders" element={<Guard f="sales/orders"><SalesOrders /></Guard>} />
+                <Route path="/sales/invoices" element={<Guard f="sales/invoices"><Invoices /></Guard>} />
+                <Route path="/sales/payments" element={<Guard f="sales/payments"><SalesPayments /></Guard>} />
+                <Route path="/purchases/dashboard" element={<Guard f="purchases/dashboard"><PurchasesDashboard /></Guard>} />
+                <Route path="/purchases/suppliers" element={<Guard f="purchases/suppliers"><Suppliers /></Guard>} />
+                <Route path="/purchases/orders" element={<Guard f="purchases/orders"><PurchaseOrders /></Guard>} />
+                <Route path="/purchases/receipts" element={<Guard f="purchases/receipts"><GoodsReceipt /></Guard>} />
+                <Route path="/purchases/bills" element={<Guard f="purchases/bills"><Bills /></Guard>} />
+                <Route path="/purchases/payments" element={<Guard f="purchases/payments"><PurchasePayments /></Guard>} />
                 <Route path="/inventory/dashboard" element={<InventoryDashboard />} />
-                <Route path="/inventory/materials" element={<Materials />} />
-                <Route path="/inventory/warehouses" element={<Warehouses />} />
-                <Route path="/inventory/stock" element={<InventoryStock />} />
-                <Route path="/inventory/transfers" element={<StockTransfers />} />
-                <Route path="/inventory/stock-card" element={<StockCard />} />
-                <Route path="/inventory/opname" element={<StockOpname />} />
-                <Route path="/inventory/recipes" element={<Recipes />} />
-                {/* POS Routes */}
-                <Route path="/pos" element={<POSDashboard />} />
-                <Route path="/pos/transactions" element={<POSTransactions />} />
-                <Route path="/pos/open-tables" element={<OpenTables />} />
-                <Route path="/pos/deposits" element={<Deposits />} />
-                <Route path="/pos/promotions" element={<Promotions />} />
-                <Route path="/pos/settings" element={<POSSettings />} />
-                <Route path="/pos/cash-closing" element={<POSCashClosing />} />
-                <Route path="/pos/reports" element={<POSReports />} />
-                <Route path="/pos/receipt-settings" element={<ReceiptSettings />} />
-                <Route path="/pos/tax-settings" element={<TaxSettings />} />
-                <Route path="/pos/printer-settings" element={<PrinterSettings />} />
-                {/* Fixed Assets */}
-                <Route path="/assets" element={<FixedAssets />} />
-                {/* Journal & Reports */}
-                <Route path="/journal" element={<JournalEntries />} />
-                {/* Accounting */}
-                <Route path="/accounting/period-closing" element={<PeriodClosing />} />
-                <Route path="/accounting/tags" element={<TransactionTags />} />
-                <Route path="/settings/activity-log" element={<ActivityLog />} />
-                <Route path="/accounting/activity-log" element={<ActivityLog />} />
-                <Route path="/reports/profit-loss" element={<ProfitLoss />} />
-                <Route path="/reports/balance-sheet" element={<BalanceSheet />} />
-                <Route path="/reports/general-ledger" element={<GeneralLedger />} />
-                <Route path="/reports/trial-balance" element={<TrialBalance />} />
-                <Route path="/reports/aged-receivables" element={<AgedReceivables />} />
-                <Route path="/reports/aged-payables" element={<AgedPayables />} />
-                <Route path="/reports/cashflow" element={<CashflowReport />} />
-                <Route path="/reports/sales" element={<SalesReport />} />
-                <Route path="/reports/purchases" element={<PurchaseReport />} />
-                <Route path="/reports/inventory" element={<InventoryReport />} />
-                <Route path="/reports/tax" element={<TaxReport />} />
-                {/* Settings */}
+                <Route path="/inventory/materials" element={<Guard f="inventory/materials"><Materials /></Guard>} />
+                <Route path="/inventory/warehouses" element={<Guard f="inventory/warehouses"><Warehouses /></Guard>} />
+                <Route path="/inventory/stock" element={<Guard f="inventory/stock"><InventoryStock /></Guard>} />
+                <Route path="/inventory/transfers" element={<Guard f="inventory/transfers"><StockTransfers /></Guard>} />
+                <Route path="/inventory/stock-card" element={<Guard f="inventory/stock-card"><StockCard /></Guard>} />
+                <Route path="/inventory/opname" element={<Guard f="inventory/opname"><StockOpname /></Guard>} />
+                <Route path="/inventory/recipes" element={<Guard f="inventory/recipes"><Recipes /></Guard>} />
+                <Route path="/pos" element={<Guard f="pos"><POSDashboard /></Guard>} />
+                <Route path="/pos/transactions" element={<Guard f="pos/transactions"><POSTransactions /></Guard>} />
+                <Route path="/pos/open-tables" element={<Guard f="pos/open-tables"><OpenTables /></Guard>} />
+                <Route path="/pos/deposits" element={<Guard f="pos/deposits"><Deposits /></Guard>} />
+                <Route path="/pos/promotions" element={<Guard f="pos/promotions"><Promotions /></Guard>} />
+                <Route path="/pos/settings" element={<Guard f="pos/settings"><POSSettings /></Guard>} />
+                <Route path="/pos/cash-closing" element={<Guard f="pos/cash-closing"><POSCashClosing /></Guard>} />
+                <Route path="/pos/reports" element={<Guard f="pos/reports"><POSReports /></Guard>} />
+                <Route path="/pos/receipt-settings" element={<Guard f="pos/receipt-settings"><ReceiptSettings /></Guard>} />
+                <Route path="/pos/tax-settings" element={<Guard f="pos/tax-settings"><TaxSettings /></Guard>} />
+                <Route path="/pos/printer-settings" element={<Guard f="pos/printer-settings"><PrinterSettings /></Guard>} />
+                <Route path="/assets" element={<Guard f="assets"><FixedAssets /></Guard>} />
+                <Route path="/journal" element={<Guard f="journal"><JournalEntries /></Guard>} />
+                <Route path="/accounting/period-closing" element={<Guard f="accounting/period-closing"><PeriodClosing /></Guard>} />
+                <Route path="/accounting/tags" element={<Guard f="accounting/tags"><TransactionTags /></Guard>} />
+                <Route path="/settings/activity-log" element={<Guard f="settings/activity-log"><ActivityLog /></Guard>} />
+                <Route path="/accounting/activity-log" element={<Guard f="settings/activity-log"><ActivityLog /></Guard>} />
+                <Route path="/reports/profit-loss" element={<Guard f="reports/profit-loss"><ProfitLoss /></Guard>} />
+                <Route path="/reports/balance-sheet" element={<Guard f="reports/balance-sheet"><BalanceSheet /></Guard>} />
+                <Route path="/reports/general-ledger" element={<Guard f="reports/general-ledger"><GeneralLedger /></Guard>} />
+                <Route path="/reports/trial-balance" element={<Guard f="reports/trial-balance"><TrialBalance /></Guard>} />
+                <Route path="/reports/aged-receivables" element={<Guard f="reports/aged-receivables"><AgedReceivables /></Guard>} />
+                <Route path="/reports/aged-payables" element={<Guard f="reports/aged-payables"><AgedPayables /></Guard>} />
+                <Route path="/reports/cashflow" element={<Guard f="reports/cashflow"><CashflowReport /></Guard>} />
+                <Route path="/reports/sales" element={<Guard f="reports/sales"><SalesReport /></Guard>} />
+                <Route path="/reports/purchases" element={<Guard f="reports/purchases"><PurchaseReport /></Guard>} />
+                <Route path="/reports/inventory" element={<Guard f="reports/inventory"><InventoryReport /></Guard>} />
+                <Route path="/reports/tax" element={<Guard f="reports/tax"><TaxReport /></Guard>} />
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />
+                <Route path="/settings/permissions" element={<Permissions />} />
                 <Route path="/settings/profile" element={<Profile />} />
               </Route>
               <Route path="*" element={<NotFound />} />
