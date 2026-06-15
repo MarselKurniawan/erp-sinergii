@@ -28,114 +28,117 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import sinergiLogo from '@/assets/sinergi-logo.png';
 
 interface MenuItem {
   icon: React.ElementType;
   label: string;
   path?: string;
-  children?: { label: string; path: string }[];
+  feature?: string;
+  children?: { label: string; path: string; feature?: string }[];
 }
 
 const menuItems: MenuItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: BookOpen, label: 'Chart of Accounts', path: '/accounts' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', feature: 'dashboard' },
+  { icon: BookOpen, label: 'Chart of Accounts', path: '/accounts', feature: 'accounts' },
   { 
     icon: CreditCard, 
     label: 'Cash & Bank',
     children: [
-      { label: 'Overview', path: '/cash-bank' },
-      { label: 'Cashflow', path: '/cash-bank/cashflow' },
-      { label: 'Cashflow Report', path: '/reports/cashflow' },
+      { label: 'Overview', path: '/cash-bank', feature: 'cash-bank' },
+      { label: 'Cashflow', path: '/cash-bank/cashflow', feature: 'cash-bank/cashflow' },
+      { label: 'Cashflow Report', path: '/reports/cashflow', feature: 'reports/cashflow' },
     ]
   },
   { 
     icon: Store, 
     label: 'POS',
     children: [
-      { label: 'Kasir', path: '/pos' },
-      { label: 'Riwayat Transaksi', path: '/pos/transactions' },
-      { label: 'Open Table', path: '/pos/open-tables' },
-      { label: 'Deposit / DP', path: '/pos/deposits' },
-      { label: 'Promosi', path: '/pos/promotions' },
-      { label: 'Laporan POS', path: '/pos/reports' },
-      { label: 'Penutupan Kas', path: '/pos/cash-closing' },
-      { label: 'Metode Pembayaran', path: '/pos/settings' },
-      { label: 'Tax & Services', path: '/pos/tax-settings' },
-      { label: 'Pengaturan Struk', path: '/pos/receipt-settings' },
-      { label: 'Pengaturan Printer', path: '/pos/printer-settings' },
+      { label: 'Kasir', path: '/pos', feature: 'pos' },
+      { label: 'Riwayat Transaksi', path: '/pos/transactions', feature: 'pos/transactions' },
+      { label: 'Open Table', path: '/pos/open-tables', feature: 'pos/open-tables' },
+      { label: 'Deposit / DP', path: '/pos/deposits', feature: 'pos/deposits' },
+      { label: 'Promosi', path: '/pos/promotions', feature: 'pos/promotions' },
+      { label: 'Laporan POS', path: '/pos/reports', feature: 'pos/reports' },
+      { label: 'Penutupan Kas', path: '/pos/cash-closing', feature: 'pos/cash-closing' },
+      { label: 'Metode Pembayaran', path: '/pos/settings', feature: 'pos/settings' },
+      { label: 'Tax & Services', path: '/pos/tax-settings', feature: 'pos/tax-settings' },
+      { label: 'Pengaturan Struk', path: '/pos/receipt-settings', feature: 'pos/receipt-settings' },
+      { label: 'Pengaturan Printer', path: '/pos/printer-settings', feature: 'pos/printer-settings' },
     ]
   },
   { 
     icon: Package, 
     label: 'Inventory',
     children: [
-      { label: 'Products (Sales)', path: '/products' },
-      { label: 'Materials (Purchase)', path: '/inventory/materials' },
-      { label: 'Recipe / BOM', path: '/inventory/recipes' },
-      { label: 'Stock per Warehouse', path: '/inventory/stock' },
-      { label: 'Kartu Stok', path: '/inventory/stock-card' },
-      { label: 'Transfers', path: '/inventory/transfers' },
-      { label: 'Stock Opname', path: '/inventory/opname' },
-      { label: 'Inventory Report', path: '/reports/inventory' },
+      { label: 'Products (Sales)', path: '/products', feature: 'products' },
+      { label: 'Materials (Purchase)', path: '/inventory/materials', feature: 'inventory/materials' },
+      { label: 'Recipe / BOM', path: '/inventory/recipes', feature: 'inventory/recipes' },
+      { label: 'Stock per Warehouse', path: '/inventory/stock', feature: 'inventory/stock' },
+      { label: 'Kartu Stok', path: '/inventory/stock-card', feature: 'inventory/stock-card' },
+      { label: 'Transfers', path: '/inventory/transfers', feature: 'inventory/transfers' },
+      { label: 'Stock Opname', path: '/inventory/opname', feature: 'inventory/opname' },
+      { label: 'Inventory Report', path: '/reports/inventory', feature: 'reports/inventory' },
     ]
   },
   { 
     icon: ShoppingCart, 
     label: 'Sales',
     children: [
-      { label: 'Dashboard', path: '/sales/dashboard' },
-      { label: 'Customers', path: '/sales/customers' },
-      { label: 'Sales Orders', path: '/sales/orders' },
-      { label: 'Invoices', path: '/sales/invoices' },
-      { label: 'Payments', path: '/sales/payments' },
-      { label: 'Sales Report', path: '/reports/sales' },
+      { label: 'Dashboard', path: '/sales/dashboard', feature: 'sales/dashboard' },
+      { label: 'Customers', path: '/sales/customers', feature: 'sales/customers' },
+      { label: 'Sales Orders', path: '/sales/orders', feature: 'sales/orders' },
+      { label: 'Invoices', path: '/sales/invoices', feature: 'sales/invoices' },
+      { label: 'Payments', path: '/sales/payments', feature: 'sales/payments' },
+      { label: 'Sales Report', path: '/reports/sales', feature: 'reports/sales' },
     ]
   },
   { 
     icon: Truck, 
     label: 'Purchases',
     children: [
-      { label: 'Dashboard', path: '/purchases/dashboard' },
-      { label: 'Suppliers', path: '/purchases/suppliers' },
-      { label: 'Purchase Orders', path: '/purchases/orders' },
-      { label: 'Goods Receipt', path: '/purchases/receipts' },
-      { label: 'Bills', path: '/purchases/bills' },
-      { label: 'Payments', path: '/purchases/payments' },
-      { label: 'Purchase Report', path: '/reports/purchases' },
+      { label: 'Dashboard', path: '/purchases/dashboard', feature: 'purchases/dashboard' },
+      { label: 'Suppliers', path: '/purchases/suppliers', feature: 'purchases/suppliers' },
+      { label: 'Purchase Orders', path: '/purchases/orders', feature: 'purchases/orders' },
+      { label: 'Goods Receipt', path: '/purchases/receipts', feature: 'purchases/receipts' },
+      { label: 'Bills', path: '/purchases/bills', feature: 'purchases/bills' },
+      { label: 'Payments', path: '/purchases/payments', feature: 'purchases/payments' },
+      { label: 'Purchase Report', path: '/reports/purchases', feature: 'reports/purchases' },
     ]
   },
-  { icon: Landmark, label: 'Aset Tetap', path: '/assets' },
-  { icon: Warehouse, label: 'Warehouses', path: '/inventory/warehouses' },
-  { icon: FileText, label: 'Journal Entries', path: '/journal' },
+  { icon: Landmark, label: 'Aset Tetap', path: '/assets', feature: 'assets' },
+  { icon: Warehouse, label: 'Warehouses', path: '/inventory/warehouses', feature: 'inventory/warehouses' },
+  { icon: FileText, label: 'Journal Entries', path: '/journal', feature: 'journal' },
   { 
     icon: Lock, 
     label: 'Accounting',
     children: [
-      { label: 'Tutup Buku', path: '/accounting/period-closing' },
-      { label: 'Tag Transaksi', path: '/accounting/tags' },
+      { label: 'Tutup Buku', path: '/accounting/period-closing', feature: 'accounting/period-closing' },
+      { label: 'Tag Transaksi', path: '/accounting/tags', feature: 'accounting/tags' },
     ]
   },
   {
     icon: BarChart3, 
     label: 'Financial Reports',
     children: [
-      { label: 'Profit & Loss', path: '/reports/profit-loss' },
-      { label: 'Balance Sheet', path: '/reports/balance-sheet' },
-      { label: 'Trial Balance', path: '/reports/trial-balance' },
-      { label: 'General Ledger', path: '/reports/general-ledger' },
-      { label: 'Aged Receivables', path: '/reports/aged-receivables' },
-      { label: 'Aged Payables', path: '/reports/aged-payables' },
-      { label: 'Rekap Pajak (PPN)', path: '/reports/tax' },
+      { label: 'Profit & Loss', path: '/reports/profit-loss', feature: 'reports/profit-loss' },
+      { label: 'Balance Sheet', path: '/reports/balance-sheet', feature: 'reports/balance-sheet' },
+      { label: 'Trial Balance', path: '/reports/trial-balance', feature: 'reports/trial-balance' },
+      { label: 'General Ledger', path: '/reports/general-ledger', feature: 'reports/general-ledger' },
+      { label: 'Aged Receivables', path: '/reports/aged-receivables', feature: 'reports/aged-receivables' },
+      { label: 'Aged Payables', path: '/reports/aged-payables', feature: 'reports/aged-payables' },
+      { label: 'Rekap Pajak (PPN)', path: '/reports/tax', feature: 'reports/tax' },
     ]
   },
   { 
     icon: Settings, 
     label: 'Settings',
     children: [
-      { label: 'Users', path: '/settings/users' },
-      { label: 'Companies', path: '/settings/companies' },
-      { label: 'Log Activity', path: '/settings/activity-log' },
+      { label: 'Users', path: '/settings/users', feature: 'settings/users' },
+      { label: 'Companies', path: '/settings/companies', feature: 'settings/companies' },
+      { label: 'Permissions', path: '/settings/permissions', feature: 'settings/permissions' },
+      { label: 'Log Activity', path: '/settings/activity-log', feature: 'settings/activity-log' },
     ]
   },
 ];
@@ -144,6 +147,7 @@ export const Sidebar: React.FC = () => {
   const location = useLocation();
   const { signOut, profile, isAdmin, isCashier } = useAuth();
   const { selectedCompany } = useCompany();
+  const { can, bypass, loading: permsLoading } = usePermissions();
   const [expandedItems, setExpandedItems] = useState<string[]>(['Sales', 'Purchases', 'Inventory', 'Financial Reports', 'POS']);
 
   const toggleExpanded = (label: string) => {
@@ -232,6 +236,20 @@ export const Sidebar: React.FC = () => {
                 };
               }
               return item;
+            })
+            .map((item) => {
+              // RBAC filter: keep children user can access
+              if (bypass || permsLoading) return item;
+              if (item.children) {
+                const filtered = item.children.filter(c => !c.feature || can(c.feature, 'view'));
+                return { ...item, children: filtered };
+              }
+              return item;
+            })
+            .filter((item) => {
+              if (bypass || permsLoading) return true;
+              if (item.path) return !item.feature || can(item.feature, 'view');
+              return (item.children?.length ?? 0) > 0;
             })
             .map((item) => (
             <li key={item.label}>

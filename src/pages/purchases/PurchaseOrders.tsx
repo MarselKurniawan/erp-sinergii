@@ -22,6 +22,7 @@ import { formatCurrency, formatDate, getStatusBadgeClass } from '@/lib/formatter
 import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { DownPaymentDialog } from '@/components/orders/DownPaymentDialog';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface PurchaseOrder {
   id: string;
@@ -99,13 +100,9 @@ export const PurchaseOrders: React.FC = () => {
     fetchOrders();
   }, [selectedCompany]);
 
-  const generateOrderNumber = () => {
-    const date = new Date();
-    const prefix = 'PO';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `${prefix}-${year}${month}-${random}`;
+  const generateOrderNumber = async () => {
+    if (!selectedCompany) return 'PO-000000-0000';
+    return await generateDocumentNumber(selectedCompany.id, 'PO');
   };
 
   const calculateItemTotal = (item: OrderItem) => {
@@ -177,7 +174,7 @@ export const PurchaseOrders: React.FC = () => {
     }
 
     const totals = calculateTotals();
-    const orderNumber = generateOrderNumber();
+    const orderNumber = await generateOrderNumber();
 
     const { data: order, error: orderError } = await supabase
       .from('purchase_orders')
@@ -278,8 +275,7 @@ export const PurchaseOrders: React.FC = () => {
     const dpPaid = order.dp_paid || 0;
     const billTotal = order.total_amount - dpPaid;
 
-    const date = new Date();
-    const billNumber = `BILL-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    const billNumber = await generateDocumentNumber(selectedCompany.id, 'BILL');
 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 30);
@@ -313,7 +309,7 @@ export const PurchaseOrders: React.FC = () => {
     await supabase.from('purchase_orders').update({ status: 'invoiced' }).eq('id', order.id);
 
     // Create journal entry for accounts payable
-    const entryNumber = `JE-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
     
     const { data: journalEntry, error: journalError } = await supabase
       .from('journal_entries')
