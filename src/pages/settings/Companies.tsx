@@ -36,6 +36,7 @@ interface Company {
   phone: string | null;
   email: string | null;
   business_type: BusinessType | null;
+  costing_method?: 'fifo' | 'average' | null;
   created_at: string;
 }
 
@@ -46,6 +47,7 @@ const initialFormData = {
   phone: '',
   email: '',
   business_type: 'trading' as BusinessType,
+  costing_method: 'average' as 'fifo' | 'average',
 };
 
 const businessTypeIcons: Record<BusinessType, React.ReactNode> = {
@@ -121,6 +123,7 @@ const Companies: React.FC = () => {
       phone: company.phone || '',
       email: company.email || '',
       business_type: company.business_type || 'trading',
+      costing_method: (company.costing_method as any) || 'average',
     });
     setDialogOpen(true);
   };
