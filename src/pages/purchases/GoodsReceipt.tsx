@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatCurrency, formatDate, getStatusBadgeClass } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface GoodsReceipt {
   id: string;
@@ -155,20 +156,16 @@ export const GoodsReceipt: React.FC = () => {
     });
   };
 
-  const generateReceiptNumber = () => {
-    const date = new Date();
-    const prefix = 'GR';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `${prefix}-${year}${month}-${random}`;
+  const generateReceiptNumber = async () => {
+    if (!selectedCompany) return 'GR-000000-0000';
+    return await generateDocumentNumber(selectedCompany.id, 'GR');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCompany || !user || !selectedOrderId) return;
 
-    const receiptNumber = generateReceiptNumber();
+    const receiptNumber = await generateReceiptNumber();
 
     // Create goods receipt
     const { data: receipt, error: receiptError } = await supabase
