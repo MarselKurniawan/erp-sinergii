@@ -250,6 +250,7 @@ export type Database = {
           address: string | null
           business_type: string | null
           code: string
+          costing_method: string
           created_at: string
           email: string | null
           id: string
@@ -261,6 +262,7 @@ export type Database = {
           address?: string | null
           business_type?: string | null
           code: string
+          costing_method?: string
           created_at?: string
           email?: string | null
           id?: string
@@ -272,6 +274,7 @@ export type Database = {
           address?: string | null
           business_type?: string | null
           code?: string
+          costing_method?: string
           created_at?: string
           email?: string | null
           id?: string
@@ -701,6 +704,7 @@ export type Database = {
           reference_id: string | null
           reference_number: string | null
           reference_type: string | null
+          remaining_qty: number
           unit_cost: number | null
           warehouse_id: string | null
         }
@@ -718,6 +722,7 @@ export type Database = {
           reference_id?: string | null
           reference_number?: string | null
           reference_type?: string | null
+          remaining_qty?: number
           unit_cost?: number | null
           warehouse_id?: string | null
         }
@@ -735,6 +740,7 @@ export type Database = {
           reference_id?: string | null
           reference_number?: string | null
           reference_type?: string | null
+          remaining_qty?: number
           unit_cost?: number | null
           warehouse_id?: string | null
         }
@@ -750,6 +756,7 @@ export type Database = {
       }
       inventory_stock: {
         Row: {
+          average_cost: number
           created_at: string
           id: string
           product_id: string
@@ -758,6 +765,7 @@ export type Database = {
           warehouse_id: string
         }
         Insert: {
+          average_cost?: number
           created_at?: string
           id?: string
           product_id: string
@@ -766,6 +774,7 @@ export type Database = {
           warehouse_id: string
         }
         Update: {
+          average_cost?: number
           created_at?: string
           id?: string
           product_id?: string
@@ -3162,6 +3171,15 @@ export type Database = {
       check_period_closed: {
         Args: { p_company_id: string; p_date: string }
         Returns: undefined
+      }
+      compute_cogs: {
+        Args: {
+          p_company_id: string
+          p_product_id: string
+          p_quantity: number
+          p_warehouse_id: string
+        }
+        Returns: number
       }
       create_bill_from_goods_receipt: {
         Args: { p_bill_date?: string; p_due_date?: string; p_gr_id: string }
