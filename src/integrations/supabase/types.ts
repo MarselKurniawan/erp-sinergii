@@ -3143,6 +3143,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _record_inventory_movement: {
+        Args: {
+          p_company_id: string
+          p_movement_date?: string
+          p_movement_type: string
+          p_product_id: string
+          p_quantity: number
+          p_reference_id: string
+          p_reference_number: string
+          p_reference_type: string
+          p_unit_cost: number
+          p_update_stock?: boolean
+          p_warehouse_id: string
+        }
+        Returns: undefined
+      }
+      check_period_closed: {
+        Args: { p_company_id: string; p_date: string }
+        Returns: undefined
+      }
       create_bill_from_goods_receipt: {
         Args: { p_bill_date?: string; p_due_date?: string; p_gr_id: string }
         Returns: string
