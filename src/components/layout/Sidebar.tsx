@@ -111,6 +111,9 @@ const menuItems: MenuItem[] = [
   { icon: Landmark, label: 'Aset Tetap', path: '/assets', feature: 'assets' },
   { icon: Warehouse, label: 'Warehouses', path: '/inventory/warehouses', feature: 'inventory/warehouses' },
   { icon: FileText, label: 'Journal Entries', path: '/journal', feature: 'journal' },
+  { icon: Factory, label: 'Production Order', path: '/manufacturing/production', feature: 'manufacturing/production' },
+  { icon: Landmark, label: 'Rekonsiliasi Bank', path: '/banking/reconciliation', feature: 'banking/reconciliation' },
+  { icon: Building2, label: 'Executive Dashboard', path: '/executive-dashboard', feature: 'executive-dashboard' },
   { 
     icon: Lock, 
     label: 'Accounting',
