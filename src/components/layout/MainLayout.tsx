@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { Loader2 } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 
 const MainLayoutComponent: React.FC = () => {
   const { user, isLoading: authLoading } = useAuth();
@@ -47,6 +48,9 @@ const MainLayoutComponent: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Sidebar />
       <main className="ml-64 flex-1 flex flex-col">
+        <div className="flex justify-end items-center gap-2 px-4 py-2 border-b border-border">
+          <NotificationBell />
+        </div>
         <div className="p-8 flex-1">
           <Outlet />
         </div>
