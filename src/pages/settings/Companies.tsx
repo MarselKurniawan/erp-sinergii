@@ -281,6 +281,7 @@ const Companies: React.FC = () => {
             address: formData.address.trim() || null,
             phone: formData.phone.trim() || null,
             email: formData.email.trim() || null,
+            costing_method: formData.costing_method,
           })
           .eq('id', selectedCompany.id);
 
@@ -297,6 +298,7 @@ const Companies: React.FC = () => {
             phone: formData.phone.trim() || null,
             email: formData.email.trim() || null,
             business_type: formData.business_type,
+            costing_method: formData.costing_method,
           })
           .select()
           .single();
