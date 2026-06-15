@@ -23,7 +23,8 @@ import {
   Lock,
   Tag,
   Store,
-  Landmark
+  Landmark,
+  Factory
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -80,6 +81,7 @@ const menuItems: MenuItem[] = [
       { label: 'Transfers', path: '/inventory/transfers', feature: 'inventory/transfers' },
       { label: 'Stock Opname', path: '/inventory/opname', feature: 'inventory/opname' },
       { label: 'Inventory Report', path: '/reports/inventory', feature: 'reports/inventory' },
+      { label: 'Valuasi Inventory', path: '/reports/inventory-valuation', feature: 'reports/inventory-valuation' },
     ]
   },
   { 
@@ -110,6 +112,9 @@ const menuItems: MenuItem[] = [
   { icon: Landmark, label: 'Aset Tetap', path: '/assets', feature: 'assets' },
   { icon: Warehouse, label: 'Warehouses', path: '/inventory/warehouses', feature: 'inventory/warehouses' },
   { icon: FileText, label: 'Journal Entries', path: '/journal', feature: 'journal' },
+  { icon: Factory, label: 'Production Order', path: '/manufacturing/production', feature: 'manufacturing/production' },
+  { icon: Landmark, label: 'Rekonsiliasi Bank', path: '/banking/reconciliation', feature: 'banking/reconciliation' },
+  { icon: Building2, label: 'Executive Dashboard', path: '/executive-dashboard', feature: 'executive-dashboard' },
   { 
     icon: Lock, 
     label: 'Accounting',
@@ -125,9 +130,13 @@ const menuItems: MenuItem[] = [
       { label: 'Profit & Loss', path: '/reports/profit-loss', feature: 'reports/profit-loss' },
       { label: 'Balance Sheet', path: '/reports/balance-sheet', feature: 'reports/balance-sheet' },
       { label: 'Trial Balance', path: '/reports/trial-balance', feature: 'reports/trial-balance' },
+      { label: 'TB Komparatif', path: '/reports/trial-balance-comparative', feature: 'reports/trial-balance-comparative' },
+      { label: 'Cash Flow (Indirect)', path: '/reports/cashflow-indirect', feature: 'reports/cashflow-indirect' },
       { label: 'General Ledger', path: '/reports/general-ledger', feature: 'reports/general-ledger' },
       { label: 'Aged Receivables', path: '/reports/aged-receivables', feature: 'reports/aged-receivables' },
       { label: 'Aged Payables', path: '/reports/aged-payables', feature: 'reports/aged-payables' },
+      { label: 'Mutasi Pelanggan', path: '/reports/customer-statement', feature: 'reports/customer-statement' },
+      { label: 'Mutasi Supplier', path: '/reports/supplier-statement', feature: 'reports/supplier-statement' },
       { label: 'Rekap Pajak (PPN)', path: '/reports/tax', feature: 'reports/tax' },
     ]
   },

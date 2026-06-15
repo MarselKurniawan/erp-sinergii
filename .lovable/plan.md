@@ -1,124 +1,123 @@
-# Rencana Implementasi
+## Scope
+Implement 4 major feature groups across DB, RPC, and UI:
 
-Ada 3 perubahan besar yang saling terkait. Karena scope-nya luas (menyentuh banyak halaman), saya pecah jadi fase yang bisa dikerjakan bertahap.
+1. **Inventory Costing (FIFO + Weighted Average)**
+2. **Bank Reconciliation**
+3. **Production Order (Manufacturing)**
+4. **Reporting tambahan + Operational gaps** (soft delete, attachments, notifications, exec dashboard)
 
----
-
-## 1. Auto-Generate Nomor Transaksi (semua dokumen)
-
-**Tujuan:** User tidak bisa lagi ketik nomor manual. Sistem yang generate otomatis pakai `generate_document_number` (sudah ada di DB).
-
-**Halaman yang diubah** (hilangkan input nomor, generate saat save):
-- Sales Orders → `SO-YYYYMM-XXXX`
-- Invoices → `INV-YYYYMM-XXXX`
-- Sales Payments → `PAY-IN-YYYYMM-XXXX`
-- Purchase Orders → `PO-YYYYMM-XXXX`
-- Goods Receipts → `GR-YYYYMM-XXXX`
-- Bills → `BILL-YYYYMM-XXXX`
-- Purchase Payments → `PAY-OUT-YYYYMM-XXXX`
-- Down Payments → `DP-YYYYMM-XXXX`
-- Manual Journal Entries → `JE-YYYYMM-XXXX`
-- POS Transactions → tetap format `INV-YYYYMMDD-XXXXX` (sudah otomatis)
-
-**UI**: Field nomor jadi readonly + label "Auto-generated saat disimpan".
+Karena ini sangat besar (~15 fitur, ~30+ file), aku breakdown jadi **4 fase migrasi terpisah** supaya bisa di-review per fase dan rollback aman kalau ada masalah.
 
 ---
 
-## 2. Role-Based Access Control (RBAC) Granular
+## Fase 1 — Costing FIFO/Average + Inventory Valuation Report
 
-**Tambahan role baru:**
-- `superadmin` — bisa atur permission semua user, akses semua fitur
-- `admin` — akses semua fitur operasional (tidak bisa atur permission)
-- `user` — default no access, harus di-assign manual per fitur
-- `cashier` — tetap khusus POS
+### DB
+- Tambah kolom `costing_method` di `companies` (enum: `fifo` | `average`), default `average`
+- Tambah `unit_cost` & `remaining_qty` di `inventory_movements` (untuk FIFO layer tracking)
+- Tambah `average_cost` di `inventory_stock` (untuk WAC running)
+- RPC `compute_cogs(product_id, warehouse_id, qty)` → return COGS sesuai method
+  - **FIFO**: ambil layer tertua dari `inventory_movements` yang `remaining_qty > 0`
+  - **Average**: pakai `inventory_stock.average_cost`
+- Update `_record_inventory_movement`:
+  - Saat IN → buat layer baru (FIFO) atau recompute WAC: `new_avg = (old_qty*old_avg + in_qty*in_cost) / (old_qty+in_qty)`
+  - Saat OUT → konsumsi layer FIFO / decrement WAC qty (avg tetap)
+- Trigger di POS / SO Invoice / Stock Transfer OUT → auto pakai `compute_cogs`
 
-**Database baru:**
-
-```sql
--- Tambah 'superadmin' ke enum app_role
-ALTER TYPE app_role ADD VALUE 'superadmin';
-
--- Tabel daftar fitur sistem
-CREATE TABLE features (
-  key TEXT PRIMARY KEY,         -- contoh: 'sales.invoices'
-  module TEXT NOT NULL,         -- 'Sales', 'Purchase', 'Inventory', dst
-  label TEXT NOT NULL,          -- 'Invoices'
-  description TEXT
-);
-
--- Permission per user per fitur per aksi
-CREATE TABLE user_permissions (
-  id UUID PK,
-  user_id UUID,
-  feature_key TEXT REFERENCES features(key),
-  can_view BOOLEAN DEFAULT false,
-  can_create BOOLEAN DEFAULT false,
-  can_edit BOOLEAN DEFAULT false,
-  can_delete BOOLEAN DEFAULT false,
-  UNIQUE(user_id, feature_key)
-);
-```
-
-**Function check:**
-```sql
-has_permission(_user_id, _feature_key, _action) → boolean
--- superadmin & admin auto-true
--- lainnya cek user_permissions
-```
-
-**Frontend:**
-- Hook `usePermissions()` → cache permission user di context
-- Komponen `<RequirePermission feature="sales.invoices" action="edit">` untuk wrap tombol/route
-- Sidebar dinamis: hanya tampil menu yang `can_view = true`
-- Tombol Edit/Delete disembunyikan jika tidak ada izin
-
-**Halaman baru: Settings → Permissions** (hanya superadmin)
-- Pilih user → matriks fitur × aksi (checkbox view/create/edit/delete)
-- Bulk apply per modul
+### UI
+- `Settings → Akuntansi`: dropdown pilih costing method per company
+- `Reports → Inventory Valuation` (baru): tabel produk × warehouse × qty × avg_cost × total_value, dengan filter as-of date
 
 ---
 
-## 3. Universal Audit Log
+## Fase 2 — Bank Reconciliation
 
-Sudah ada tabel `activity_logs` + helper `logActivity()`. Saat ini hanya dipakai sebagian. Yang perlu dilakukan:
+### DB
+- Table `bank_statements` (id, company_id, account_id [COA bank], period_start, period_end, opening_balance, closing_balance, status, imported_at)
+- Table `bank_statement_lines` (id, statement_id, txn_date, description, ref_number, debit, credit, matched_payment_id, matched_je_line_id, status: `unmatched|matched|manual`)
+- RPC `auto_match_bank_lines(statement_id)` → fuzzy match by date±3 hari + amount exact ke `payments` & `journal_entry_lines`
+- RPC `finalize_bank_recon(statement_id)` → set semua lines matched/manual, lock statement
 
-**Strategi: Database triggers** (lebih reliable daripada panggil dari frontend di setiap tempat)
-
-```sql
--- Generic trigger function yang catat INSERT/UPDATE/DELETE
-CREATE FUNCTION audit_trigger() RETURNS trigger ...
-  -- INSERT: log action='create' dengan snapshot row
-  -- UPDATE: log action='update' dengan diff (old vs new)
-  -- DELETE: log action='delete' dengan snapshot row
-  -- Pakai auth.uid() untuk user_id, current_setting untuk context
-
--- Pasang ke semua tabel transaksi:
-CREATE TRIGGER audit_xxx AFTER INSERT/UPDATE/DELETE ON <table>
-  FOR EACH ROW EXECUTE FUNCTION audit_trigger();
-```
-
-**Tabel yang di-audit:** sales_orders, invoices, payments, purchase_orders, bills, goods_receipts, down_payments, journal_entries, pos_transactions, products, customers, suppliers, chart_of_accounts, fixed_assets, stock_transfers, stock_opname, companies, user_roles, user_permissions, user_companies.
-
-**Audit Trail page** (sudah ada di `/accounting/activity-log`) tinggal pastikan filter & search jalan untuk volume baru.
+### UI
+- `Banking → Rekonsiliasi Bank`:
+  - List bank statement per akun
+  - Import CSV (kolom: date, description, ref, debit, credit) atau input manual
+  - Tampilan side-by-side: bank lines kiri, payment/JE kandidat kanan
+  - Tombol Auto-match + manual link/unlink + Finalize
 
 ---
 
-## Estimasi Eksekusi
+## Fase 3 — Production Order (Manufacturing)
 
-Karena scope sangat besar, saya sarankan kerjakan **bertahap** supaya tidak ada regression:
+### DB
+- Table `production_orders` (id, company_id, order_number, product_id [finished], recipe_id, planned_qty, produced_qty, warehouse_id, start_date, finish_date, status: `draft|in_progress|completed|cancelled`, total_cost)
+- Table `production_order_materials` (id, po_id, material_id, planned_qty, consumed_qty, unit_cost, total_cost) — di-snapshot dari recipe saat draft
+- RPC `start_production(po_id)`:
+  - Consume material → OUT dari warehouse (pakai costing_method)
+  - Buat JE: D WIP / C Inventory Material
+- RPC `complete_production(po_id, actual_qty)`:
+  - IN finished good ke warehouse dengan `unit_cost = total_material_cost / actual_qty`
+  - Buat JE: D Inventory Finished / C WIP
+- Tambah COA wajib: `WIP (Work In Progress)` 1-1400
 
-- **Fase 1** — Migration DB: enum superadmin, tabel features, user_permissions, audit triggers, function helper
-- **Fase 2** — Auto-generate nomor di semua form (1 fase, semua sekaligus)
-- **Fase 3** — RBAC frontend: hook, guard component, sidebar dinamis, halaman Permissions
-- **Fase 4** — Verifikasi audit log muncul di setiap aksi
+### UI
+- `Manufacturing → Production Order` (menu baru di sidebar):
+  - List, Create (pilih produk + recipe + qty + warehouse → auto-load BOM)
+  - Detail dengan tombol Start → Complete
+  - Cetak Work Order
 
 ---
+
+## Fase 4 — Reporting tambahan + Operational gaps
+
+### Reporting (UI baru, semua read dari existing tables)
+- **Trial Balance Komparatif**: 2+ periode side-by-side, kolom: Akun | Period A Dr | Period A Cr | Period B Dr | Period B Cr | Variance
+- **Cash Flow Indirect**: Net Income → adjustment non-cash (depresiasi) → ∆ working capital (AR, AP, Inventory) → CF Operasi + Investing + Financing
+- **Customer Statement**: per customer, semua invoice + payment + saldo running per tanggal
+- **Supplier Statement**: per supplier, semua bill + payment + saldo running
+
+### Soft Delete / Void
+- Tambah `voided_at`, `voided_by`, `void_reason` di: `invoices`, `bills`, `payments`, `journal_entries`, `pos_transactions`, `sales_orders`, `purchase_orders`
+- RPC `void_transaction(entity_type, entity_id, reason)`:
+  - Set voided_* fields
+  - Buat reversing JE (D ↔ C swap) tanggal hari ini
+  - Audit log otomatis (trigger sudah ada)
+- UI: tombol "Void" di detail transaksi (ganti tombol Delete untuk role non-superadmin), dialog input reason, filter "Sembunyikan voided" di list
+
+### Attachment
+- Storage bucket `transaction-attachments` (private, RLS by company)
+- Table `transaction_attachments` (id, company_id, entity_type, entity_id, file_path, file_name, mime_type, size, uploaded_by, uploaded_at)
+- Component `<AttachmentList entityType entityId />` reusable → pasang di detail Invoice/Bill/GR/Payment/JE
+- Upload (drag-drop), preview thumbnail untuk image, download untuk PDF
+
+### Notifications
+- Table `notifications` (id, user_id, company_id, type, title, message, link, read_at, created_at)
+- Scheduled function (pg_cron, daily 6 AM):
+  - Invoice jatuh tempo ≤7 hari & outstanding > 0 → notify sales/admin
+  - Bill jatuh tempo ≤7 hari → notify purchasing/admin
+  - Stock < min_stock → notify warehouse PIC
+  - PO/SO status `pending_approval` >24 jam → notify approver
+- UI: bell icon di header, dropdown list, badge unread count, mark as read
+
+### Executive Dashboard (Consolidated)
+- Halaman `/dashboard/executive` (akses: superadmin/admin only)
+- Tidak filter per company — tampil semua company user punya akses
+- KPI Cards: Total Revenue, Net Profit, Cash Position, AR, AP (sum lintas company)
+- Chart: Revenue per Company (bar), Profit Margin trend (line), Top 5 Products lintas company
+- Table: ringkasan per company (Revenue, Profit, Outstanding AR/AP, Stock Value)
+
+---
+
+## Eksekusi
+Aku akan kerjakan **Fase 1 → 2 → 3 → 4 berurutan**. Setiap fase = 1 migrasi DB + UI changes, lalu lanjut fase berikutnya. Total estimasi ~4 ronde kerja besar.
+
+## Catatan teknis
+- Semua tabel baru: RLS by `user_has_company_access` + GRANT authenticated/service_role
+- Semua RPC: `SECURITY DEFINER`, cek akses company di awal
+- Period closing guard otomatis berlaku (sudah ada trigger di JE, invoices, bills, dll)
+- Audit log otomatis (trigger sudah pasang di 40+ tabel)
+- Bahasa UI: Indonesian
+- Komponen dropdown: `SearchableSelect`
 
 ## Pertanyaan sebelum mulai
-
-1. **Default permission untuk role `user`**: kosong (harus assign manual) atau view-only semua?
-2. **User saat ini** (`marshel@sinergimanajemen.com`): apakah jadi `superadmin`? Admin lain ikut jadi `superadmin` atau tetap `admin`?
-3. **Audit log untuk SELECT (view)**: dicatat juga atau cukup write-actions (create/update/delete) saja? *(rekomendasi: write saja, biar tidak membengkak)*
-4. **Halaman Permissions**: matriks per user, atau bikin "permission templates/groups" (mis. role kustom) yang bisa di-assign ke banyak user?
-
-Setelah dijawab, saya mulai dari Fase 1 (migration).
+Mau aku langsung gas Fase 1 (Costing FIFO/Avg + Valuation Report) sekarang, atau ada penyesuaian scope di salah satu fase?

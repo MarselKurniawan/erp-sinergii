@@ -44,6 +44,14 @@ import CashflowReport from "./pages/reports/CashflowReport";
 import SalesReport from "./pages/reports/SalesReport";
 import PurchaseReport from "./pages/reports/PurchaseReport";
 import InventoryReport from "./pages/reports/InventoryReport";
+import InventoryValuation from "./pages/reports/InventoryValuation";
+import CustomerStatement from "./pages/reports/CustomerStatement";
+import SupplierStatement from "./pages/reports/SupplierStatement";
+import TrialBalanceComparative from "./pages/reports/TrialBalanceComparative";
+import CashflowIndirect from "./pages/reports/CashflowIndirect";
+import ExecutiveDashboard from "./pages/ExecutiveDashboard";
+import BankReconciliation from "./pages/banking/BankReconciliation";
+import ProductionOrders from "./pages/manufacturing/ProductionOrders";
 import Users from "./pages/settings/Users";
 import Companies from "./pages/settings/Companies";
 import Profile from "./pages/settings/Profile";
@@ -137,6 +145,14 @@ const App = () => (
                 <Route path="/reports/sales" element={<Guard f="reports/sales"><SalesReport /></Guard>} />
                 <Route path="/reports/purchases" element={<Guard f="reports/purchases"><PurchaseReport /></Guard>} />
                 <Route path="/reports/inventory" element={<Guard f="reports/inventory"><InventoryReport /></Guard>} />
+                <Route path="/reports/inventory-valuation" element={<Guard f="reports/inventory-valuation"><InventoryValuation /></Guard>} />
+                <Route path="/reports/customer-statement" element={<Guard f="reports/customer-statement"><CustomerStatement /></Guard>} />
+                <Route path="/reports/supplier-statement" element={<Guard f="reports/supplier-statement"><SupplierStatement /></Guard>} />
+                <Route path="/reports/trial-balance-comparative" element={<Guard f="reports/trial-balance-comparative"><TrialBalanceComparative /></Guard>} />
+                <Route path="/reports/cashflow-indirect" element={<Guard f="reports/cashflow-indirect"><CashflowIndirect /></Guard>} />
+                <Route path="/executive-dashboard" element={<Guard f="executive-dashboard"><ExecutiveDashboard /></Guard>} />
+                <Route path="/banking/reconciliation" element={<Guard f="banking/reconciliation"><BankReconciliation /></Guard>} />
+                <Route path="/manufacturing/production" element={<Guard f="manufacturing/production"><ProductionOrders /></Guard>} />
                 <Route path="/reports/tax" element={<Guard f="reports/tax"><TaxReport /></Guard>} />
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />

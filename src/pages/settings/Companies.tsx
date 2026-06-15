@@ -36,6 +36,7 @@ interface Company {
   phone: string | null;
   email: string | null;
   business_type: BusinessType | null;
+  costing_method?: 'fifo' | 'average' | null;
   created_at: string;
 }
 
@@ -46,6 +47,7 @@ const initialFormData = {
   phone: '',
   email: '',
   business_type: 'trading' as BusinessType,
+  costing_method: 'average' as 'fifo' | 'average',
 };
 
 const businessTypeIcons: Record<BusinessType, React.ReactNode> = {
@@ -121,6 +123,7 @@ const Companies: React.FC = () => {
       phone: company.phone || '',
       email: company.email || '',
       business_type: company.business_type || 'trading',
+      costing_method: (company.costing_method as any) || 'average',
     });
     setDialogOpen(true);
   };
@@ -278,6 +281,7 @@ const Companies: React.FC = () => {
             address: formData.address.trim() || null,
             phone: formData.phone.trim() || null,
             email: formData.email.trim() || null,
+            costing_method: formData.costing_method,
           })
           .eq('id', selectedCompany.id);
 
@@ -294,6 +298,7 @@ const Companies: React.FC = () => {
             phone: formData.phone.trim() || null,
             email: formData.email.trim() || null,
             business_type: formData.business_type,
+            costing_method: formData.costing_method,
           })
           .select()
           .single();
@@ -599,6 +604,30 @@ const Companies: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="Full address"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Metode Costing Inventory</Label>
+              <RadioGroup
+                value={formData.costing_method}
+                onValueChange={(v) => setFormData({ ...formData, costing_method: v as 'fifo' | 'average' })}
+                className="grid grid-cols-2 gap-3"
+              >
+                <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${formData.costing_method === 'average' ? 'border-primary bg-primary/5' : ''}`}>
+                  <RadioGroupItem value="average" className="mt-0.5" />
+                  <div>
+                    <div className="font-medium text-sm">Rata-rata (WAC)</div>
+                    <div className="text-xs text-muted-foreground">Weighted Average Cost. Cocok untuk barang sejenis dengan harga stabil.</div>
+                  </div>
+                </label>
+                <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${formData.costing_method === 'fifo' ? 'border-primary bg-primary/5' : ''}`}>
+                  <RadioGroupItem value="fifo" className="mt-0.5" />
+                  <div>
+                    <div className="font-medium text-sm">FIFO</div>
+                    <div className="text-xs text-muted-foreground">First In First Out. Akurat untuk barang dengan fluktuasi harga.</div>
+                  </div>
+                </label>
+              </RadioGroup>
             </div>
 
             {!selectedCompany && (
