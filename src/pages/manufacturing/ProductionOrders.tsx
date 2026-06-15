@@ -29,12 +29,10 @@ const ProductionOrders: React.FC = () => {
 
   const load = async () => {
     if (!selectedCompany) return;
-    const [o, p, r, w] = await Promise.all([
-      supabase.from('production_orders').select('*, product:products(name), warehouse:warehouses(name)').eq('company_id', selectedCompany.id).order('created_at', { ascending: false }),
-      supabase.from('products').select('id, name, sku').eq('company_id', selectedCompany.id).eq('type', 'product'),
-      supabase.from('recipes').select('id, name, product_id, items:recipe_items(material_id, quantity, material:products(name))').eq('company_id', selectedCompany.id),
-      supabase.from('warehouses').select('id, name').eq('company_id', selectedCompany.id),
-    ]);
+    const o: any = await supabase.from('production_orders').select('*, product:products(name), warehouse:warehouses(name)').eq('company_id', selectedCompany.id).order('created_at', { ascending: false });
+    const p: any = await supabase.from('products').select('id, name, sku').eq('company_id', selectedCompany.id);
+    const r: any = await supabase.from('recipes').select('id, name, product_id, items:recipe_items(material_id, quantity, material:products(name))').eq('company_id', selectedCompany.id);
+    const w: any = await supabase.from('warehouses').select('id, name').eq('company_id', selectedCompany.id);
     setOrders(o.data || []); setProducts(p.data || []); setRecipes(r.data || []); setWarehouses(w.data || []);
   };
 
