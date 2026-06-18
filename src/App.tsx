@@ -74,6 +74,7 @@ import TaxReport from "./pages/reports/TaxReport";
 import NotFound from "./pages/NotFound";
 import Permissions from "./pages/settings/Permissions";
 import { RequireFeature } from "@/components/RequireFeature";
+import ComingSoon from "./pages/ComingSoon";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -158,6 +159,62 @@ const App = () => (
                 <Route path="/settings/companies" element={<Companies />} />
                 <Route path="/settings/permissions" element={<Permissions />} />
                 <Route path="/settings/profile" element={<Profile />} />
+                {/* Sale group */}
+                <Route path="/sales/estimates" element={<Guard f="sales/estimates"><ComingSoon title="Estimate List" /></Guard>} />
+                <Route path="/sales/estimates/new" element={<Guard f="sales/estimates"><ComingSoon title="Create New Estimate" /></Guard>} />
+                <Route path="/sales/returns" element={<Guard f="sales/returns"><ComingSoon title="Sale Return" /></Guard>} />
+                {/* Purchase group */}
+                <Route path="/purchases/returns" element={<Guard f="purchases/returns"><ComingSoon title="Purchase Return" /></Guard>} />
+                {/* Expense */}
+                <Route path="/expenses" element={<Guard f="expenses"><ComingSoon title="Expenses List" /></Guard>} />
+                <Route path="/expenses/new" element={<Guard f="expenses"><ComingSoon title="New Expense" /></Guard>} />
+                {/* Cash/Bank extras */}
+                <Route path="/cash-bank/transfers" element={<Guard f="cash-bank/transfers"><ComingSoon title="Cash/Bank Transfer List" /></Guard>} />
+                <Route path="/cash-bank/transfers/new" element={<Guard f="cash-bank/transfers"><ComingSoon title="New Cash/Bank Transfer" /></Guard>} />
+                <Route path="/cash-bank/fix-mapping" element={<Guard f="cash-bank/fix-mapping"><ComingSoon title="Fix Payment Mapping Issues" /></Guard>} />
+                {/* Receipt */}
+                <Route path="/receipts" element={<Guard f="receipts"><ComingSoon title="Receipts" /></Guard>} />
+                {/* Capital */}
+                <Route path="/capital" element={<Guard f="capital"><ComingSoon title="Capital Transaction List" /></Guard>} />
+                <Route path="/capital/new" element={<Guard f="capital"><ComingSoon title="New Capital Transaction" /></Guard>} />
+                {/* Accounts extras */}
+                <Route path="/accounts/opening-balance" element={<Guard f="accounts/opening-balance"><ComingSoon title="Manage Opening Balance" /></Guard>} />
+                {/* Contacts */}
+                <Route path="/contacts" element={<Guard f="contacts"><ComingSoon title="Customer/Supplier List" /></Guard>} />
+                <Route path="/contacts/new" element={<Guard f="contacts"><ComingSoon title="New Customer/Supplier" /></Guard>} />
+                <Route path="/contacts/receivables-payables" element={<Guard f="contacts/receivables-payables"><ComingSoon title="Receivables & Payables" /></Guard>} />
+                {/* Reports - new */}
+                <Route path="/reports/sales-payment" element={<Guard f="reports/sales-payment"><ComingSoon title="Sales / Payment Report" /></Guard>} />
+                <Route path="/reports/product-sales" element={<Guard f="reports/product-sales"><ComingSoon title="Product Sales Report" /></Guard>} />
+                <Route path="/reports/top-clients" element={<Guard f="reports/top-clients"><ComingSoon title="Sales By Clients - Top 5" /></Guard>} />
+                <Route path="/reports/top-products" element={<Guard f="reports/top-products"><ComingSoon title="Sales By Products - Top 5" /></Guard>} />
+                <Route path="/reports/sale-orders" element={<Guard f="reports/sale-orders"><ComingSoon title="Sale Order Report" /></Guard>} />
+                <Route path="/reports/sales-returns" element={<Guard f="reports/sales-returns"><ComingSoon title="Sales Return Report" /></Guard>} />
+                <Route path="/reports/product-purchase" element={<Guard f="reports/product-purchase"><ComingSoon title="Product Purchase Report" /></Guard>} />
+                <Route path="/reports/purchase-orders" element={<Guard f="reports/purchase-orders"><ComingSoon title="Purchase Order Report" /></Guard>} />
+                <Route path="/reports/purchases-detailed" element={<Guard f="reports/purchases-detailed"><ComingSoon title="Detailed Purchase Report" /></Guard>} />
+                <Route path="/reports/purchase-returns" element={<Guard f="reports/purchase-returns"><ComingSoon title="Purchase Return Report" /></Guard>} />
+                <Route path="/reports/pl-cogs-period" element={<Guard f="reports/pl-cogs-period"><ComingSoon title="P&L Periodic (COGS)" /></Guard>} />
+                <Route path="/reports/pl-stock-period" element={<Guard f="reports/pl-stock-period"><ComingSoon title="P&L Periodic (Stock)" /></Guard>} />
+                <Route path="/reports/pl-stock" element={<Guard f="reports/pl-stock"><ComingSoon title="P&L Using Opening/Closing Stock" /></Guard>} />
+                <Route path="/reports/pl-product" element={<Guard f="reports/pl-product"><ComingSoon title="Product wise Profit/Loss" /></Guard>} />
+                <Route path="/reports/pl-invoice" element={<Guard f="reports/pl-invoice"><ComingSoon title="Invoice wise Profit/Loss" /></Guard>} />
+                <Route path="/reports/pl-client" element={<Guard f="reports/pl-client"><ComingSoon title="Client wise Profit/Loss" /></Guard>} />
+                <Route path="/reports/expense" element={<Guard f="reports/expense"><ComingSoon title="Expense Report" /></Guard>} />
+                <Route path="/reports/expense-detailed" element={<Guard f="reports/expense-detailed"><ComingSoon title="Detailed Expense Report" /></Guard>} />
+                <Route path="/reports/day-book" element={<Guard f="reports/day-book"><ComingSoon title="Day Book Report" /></Guard>} />
+                {/* Settings - new */}
+                <Route path="/settings/discount-tax" element={<ComingSoon title="Discount and Taxes" />} />
+                <Route path="/settings/terms" element={<ComingSoon title="Terms and Conditions" />} />
+                <Route path="/settings/invoice-theme" element={<ComingSoon title="Invoice Theme" />} />
+                <Route path="/settings/balance-sheet" element={<ComingSoon title="Balance Sheet Setting" />} />
+                <Route path="/settings/dashboard" element={<ComingSoon title="Customize Dashboard" />} />
+                <Route path="/settings/features" element={<ComingSoon title="Enable / Disable Feature" />} />
+                <Route path="/settings/fields" element={<ComingSoon title="Show/Hide Fields" />} />
+                <Route path="/settings/inventory" element={<ComingSoon title="Inventory Setting" />} />
+                <Route path="/settings/payment-tracking" element={<ComingSoon title="Payment Tracking" />} />
+                <Route path="/settings/banking" element={<ComingSoon title="Banking Details & PayPal.Me" />} />
+                <Route path="/settings/document-fields" element={<ComingSoon title="Manage Fields in Documents" />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
