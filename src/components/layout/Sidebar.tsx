@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Package, 
-  ShoppingCart, 
-  Truck, 
-  FileText, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  Package,
+  ShoppingCart,
+  Truck,
+  FileText,
   BarChart3,
   ChevronDown,
   ChevronRight,
@@ -17,14 +17,13 @@ import {
   LogOut,
   Settings,
   Warehouse,
-  ArrowLeftRight,
-  ClipboardCheck,
-  Boxes,
   Lock,
-  Tag,
   Store,
   Landmark,
-  Factory
+  Factory,
+  Wallet,
+  TrendingUp,
+  Banknote,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,19 +41,126 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', feature: 'dashboard' },
-  { icon: BookOpen, label: 'Chart of Accounts', path: '/accounts', feature: 'accounts' },
-  { 
-    icon: CreditCard, 
-    label: 'Cash & Bank',
+  {
+    icon: ShoppingCart, label: 'Sale',
     children: [
-      { label: 'Overview', path: '/cash-bank', feature: 'cash-bank' },
-      { label: 'Cashflow', path: '/cash-bank/cashflow', feature: 'cash-bank/cashflow' },
-      { label: 'Cashflow Report', path: '/reports/cashflow', feature: 'reports/cashflow' },
-    ]
+      { label: 'Create New Sale', path: '/sales/invoices?new=1', feature: 'sales/invoices' },
+      { label: 'Sale List', path: '/sales/invoices', feature: 'sales/invoices' },
+      { label: 'Create New Estimate', path: '/sales/estimates/new', feature: 'sales/estimates' },
+      { label: 'Estimate List', path: '/sales/estimates', feature: 'sales/estimates' },
+      { label: 'New Sale Order', path: '/sales/orders?new=1', feature: 'sales/orders' },
+      { label: 'Sale Order List', path: '/sales/orders', feature: 'sales/orders' },
+      { label: 'Sale Return', path: '/sales/returns', feature: 'sales/returns' },
+    ],
   },
-  { 
-    icon: Store, 
-    label: 'POS',
+  {
+    icon: Truck, label: 'Purchase',
+    children: [
+      { label: 'New Purchase', path: '/purchases/bills?new=1', feature: 'purchases/bills' },
+      { label: 'Purchase List', path: '/purchases/bills', feature: 'purchases/bills' },
+      { label: 'New Purchase Order', path: '/purchases/orders?new=1', feature: 'purchases/orders' },
+      { label: 'Purchase Order List', path: '/purchases/orders', feature: 'purchases/orders' },
+      { label: 'Purchase Return', path: '/purchases/returns', feature: 'purchases/returns' },
+    ],
+  },
+  {
+    icon: Wallet, label: 'Expense',
+    children: [
+      { label: 'New Expenses', path: '/expenses/new', feature: 'expenses' },
+      { label: 'Expenses List', path: '/expenses', feature: 'expenses' },
+    ],
+  },
+  {
+    icon: CreditCard, label: 'Payment & Cash/Bank',
+    children: [
+      { label: 'New Payment', path: '/sales/payments?new=1', feature: 'sales/payments' },
+      { label: 'Payment List', path: '/sales/payments', feature: 'sales/payments' },
+      { label: 'New Cash/Bank Transfer', path: '/cash-bank/transfers/new', feature: 'cash-bank/transfers' },
+      { label: 'Cash/Bank Transfer List', path: '/cash-bank/transfers', feature: 'cash-bank/transfers' },
+      { label: 'Show Cash/Bank Balance', path: '/cash-bank', feature: 'cash-bank' },
+      { label: 'Fix Payment Mapping Issues', path: '/cash-bank/fix-mapping', feature: 'cash-bank/fix-mapping' },
+    ],
+  },
+  { icon: Receipt, label: 'Receipt', path: '/receipts', feature: 'receipts' },
+  {
+    icon: TrendingUp, label: 'Capital Transaction',
+    children: [
+      { label: 'New Transaction', path: '/capital/new', feature: 'capital' },
+      { label: 'Transaction List', path: '/capital', feature: 'capital' },
+    ],
+  },
+  {
+    icon: BookOpen, label: 'Accounts',
+    children: [
+      { label: 'New Account', path: '/accounts?new=1', feature: 'accounts' },
+      { label: 'Account List', path: '/accounts', feature: 'accounts' },
+      { label: 'Manage Opening Balance', path: '/accounts/opening-balance', feature: 'accounts/opening-balance' },
+    ],
+  },
+  {
+    icon: FileText, label: 'Journal',
+    children: [
+      { label: 'New Journal', path: '/journal?new=1', feature: 'journal' },
+      { label: 'Journal List', path: '/journal', feature: 'journal' },
+    ],
+  },
+  {
+    icon: Users, label: 'Customer & Supplier',
+    children: [
+      { label: 'New Customer/Supplier', path: '/contacts/new', feature: 'contacts' },
+      { label: 'Customer/Supplier List', path: '/contacts', feature: 'contacts' },
+      { label: 'Show Receivables/Payables', path: '/contacts/receivables-payables', feature: 'contacts/receivables-payables' },
+    ],
+  },
+  {
+    icon: Package, label: 'Product/Services',
+    children: [
+      { label: 'New Product', path: '/products?new=1', feature: 'products' },
+      { label: 'Product List', path: '/products', feature: 'products' },
+    ],
+  },
+  {
+    icon: BarChart3, label: 'Reports',
+    children: [
+      { label: 'Sales / Payment Report', path: '/reports/sales-payment', feature: 'reports/sales-payment' },
+      { label: 'Product Sales Report', path: '/reports/product-sales', feature: 'reports/product-sales' },
+      { label: 'Sales By Clients - Top 5', path: '/reports/top-clients', feature: 'reports/top-clients' },
+      { label: 'Sales By Products - Top 5', path: '/reports/top-products', feature: 'reports/top-products' },
+      { label: 'Sale Order Report', path: '/reports/sale-orders', feature: 'reports/sale-orders' },
+      { label: 'Invoice Aging Sales', path: '/reports/aged-receivables', feature: 'reports/aged-receivables' },
+      { label: 'Detailed Sales Report', path: '/reports/sales', feature: 'reports/sales' },
+      { label: 'Sales Return Report', path: '/reports/sales-returns', feature: 'reports/sales-returns' },
+      { label: 'Product Purchase Report', path: '/reports/product-purchase', feature: 'reports/product-purchase' },
+      { label: 'Purchase Report', path: '/reports/purchases', feature: 'reports/purchases' },
+      { label: 'Invoice Aging Supplier', path: '/reports/aged-payables', feature: 'reports/aged-payables' },
+      { label: 'Purchase Order Report', path: '/reports/purchase-orders', feature: 'reports/purchase-orders' },
+      { label: 'Detailed Purchase Report', path: '/reports/purchases-detailed', feature: 'reports/purchases-detailed' },
+      { label: 'Purchase Return Report', path: '/reports/purchase-returns', feature: 'reports/purchase-returns' },
+      { label: 'P&L - Periodic (COGS)', path: '/reports/pl-cogs-period', feature: 'reports/pl-cogs-period' },
+      { label: 'P&L - Periodic (Stock)', path: '/reports/pl-stock-period', feature: 'reports/pl-stock-period' },
+      { label: 'P&L Using COGS', path: '/reports/profit-loss', feature: 'reports/profit-loss' },
+      { label: 'P&L Using Opening/Closing Stock', path: '/reports/pl-stock', feature: 'reports/pl-stock' },
+      { label: 'Product wise Profit/Loss', path: '/reports/pl-product', feature: 'reports/pl-product' },
+      { label: 'Invoice wise Profit/Loss', path: '/reports/pl-invoice', feature: 'reports/pl-invoice' },
+      { label: 'Client wise Profit/Loss', path: '/reports/pl-client', feature: 'reports/pl-client' },
+      { label: 'Balance Sheet', path: '/reports/balance-sheet', feature: 'reports/balance-sheet' },
+      { label: 'Trial Balance', path: '/reports/trial-balance', feature: 'reports/trial-balance' },
+      { label: 'Trial Balance Comparative', path: '/reports/trial-balance-comparative', feature: 'reports/trial-balance-comparative' },
+      { label: 'Expense Report', path: '/reports/expense', feature: 'reports/expense' },
+      { label: 'Detailed Expense Report', path: '/reports/expense-detailed', feature: 'reports/expense-detailed' },
+      { label: 'Inventory Report', path: '/reports/inventory', feature: 'reports/inventory' },
+      { label: 'Day Book Report', path: '/reports/day-book', feature: 'reports/day-book' },
+      { label: 'Cash Flow Statement', path: '/reports/cashflow', feature: 'reports/cashflow' },
+      { label: 'Cash Flow (Indirect)', path: '/reports/cashflow-indirect', feature: 'reports/cashflow-indirect' },
+      { label: 'Tax Report', path: '/reports/tax', feature: 'reports/tax' },
+      { label: 'General Ledger', path: '/reports/general-ledger', feature: 'reports/general-ledger' },
+      { label: 'Customer Statement', path: '/reports/customer-statement', feature: 'reports/customer-statement' },
+      { label: 'Supplier Statement', path: '/reports/supplier-statement', feature: 'reports/supplier-statement' },
+      { label: 'Inventory Valuation', path: '/reports/inventory-valuation', feature: 'reports/inventory-valuation' },
+    ],
+  },
+  {
+    icon: Store, label: 'POS',
     children: [
       { label: 'Kasir', path: '/pos', feature: 'pos' },
       { label: 'Riwayat Transaksi', path: '/pos/transactions', feature: 'pos/transactions' },
@@ -66,89 +172,52 @@ const menuItems: MenuItem[] = [
       { label: 'Metode Pembayaran', path: '/pos/settings', feature: 'pos/settings' },
       { label: 'Tax & Services', path: '/pos/tax-settings', feature: 'pos/tax-settings' },
       { label: 'Pengaturan Struk', path: '/pos/receipt-settings', feature: 'pos/receipt-settings' },
-      { label: 'Pengaturan Printer', path: '/pos/printer-settings', feature: 'pos/printer-settings' },
-    ]
+    ],
   },
-  { 
-    icon: Package, 
-    label: 'Inventory',
+  {
+    icon: Package, label: 'Inventory',
     children: [
-      { label: 'Products (Sales)', path: '/products', feature: 'products' },
       { label: 'Materials (Purchase)', path: '/inventory/materials', feature: 'inventory/materials' },
       { label: 'Recipe / BOM', path: '/inventory/recipes', feature: 'inventory/recipes' },
       { label: 'Stock per Warehouse', path: '/inventory/stock', feature: 'inventory/stock' },
       { label: 'Kartu Stok', path: '/inventory/stock-card', feature: 'inventory/stock-card' },
       { label: 'Transfers', path: '/inventory/transfers', feature: 'inventory/transfers' },
       { label: 'Stock Opname', path: '/inventory/opname', feature: 'inventory/opname' },
-      { label: 'Inventory Report', path: '/reports/inventory', feature: 'reports/inventory' },
-      { label: 'Valuasi Inventory', path: '/reports/inventory-valuation', feature: 'reports/inventory-valuation' },
-    ]
+    ],
   },
-  { 
-    icon: ShoppingCart, 
-    label: 'Sales',
-    children: [
-      { label: 'Dashboard', path: '/sales/dashboard', feature: 'sales/dashboard' },
-      { label: 'Customers', path: '/sales/customers', feature: 'sales/customers' },
-      { label: 'Sales Orders', path: '/sales/orders', feature: 'sales/orders' },
-      { label: 'Invoices', path: '/sales/invoices', feature: 'sales/invoices' },
-      { label: 'Payments', path: '/sales/payments', feature: 'sales/payments' },
-      { label: 'Sales Report', path: '/reports/sales', feature: 'reports/sales' },
-    ]
-  },
-  { 
-    icon: Truck, 
-    label: 'Purchases',
-    children: [
-      { label: 'Dashboard', path: '/purchases/dashboard', feature: 'purchases/dashboard' },
-      { label: 'Suppliers', path: '/purchases/suppliers', feature: 'purchases/suppliers' },
-      { label: 'Purchase Orders', path: '/purchases/orders', feature: 'purchases/orders' },
-      { label: 'Goods Receipt', path: '/purchases/receipts', feature: 'purchases/receipts' },
-      { label: 'Bills', path: '/purchases/bills', feature: 'purchases/bills' },
-      { label: 'Payments', path: '/purchases/payments', feature: 'purchases/payments' },
-      { label: 'Purchase Report', path: '/reports/purchases', feature: 'reports/purchases' },
-    ]
-  },
-  { icon: Landmark, label: 'Aset Tetap', path: '/assets', feature: 'assets' },
   { icon: Warehouse, label: 'Warehouses', path: '/inventory/warehouses', feature: 'inventory/warehouses' },
-  { icon: FileText, label: 'Journal Entries', path: '/journal', feature: 'journal' },
+  { icon: Landmark, label: 'Fixed Assets', path: '/assets', feature: 'assets' },
   { icon: Factory, label: 'Production Order', path: '/manufacturing/production', feature: 'manufacturing/production' },
-  { icon: Landmark, label: 'Rekonsiliasi Bank', path: '/banking/reconciliation', feature: 'banking/reconciliation' },
+  { icon: Banknote, label: 'Bank Reconciliation', path: '/banking/reconciliation', feature: 'banking/reconciliation' },
   { icon: Building2, label: 'Executive Dashboard', path: '/executive-dashboard', feature: 'executive-dashboard' },
-  { 
-    icon: Lock, 
-    label: 'Accounting',
+  {
+    icon: Lock, label: 'Accounting',
     children: [
       { label: 'Tutup Buku', path: '/accounting/period-closing', feature: 'accounting/period-closing' },
       { label: 'Tag Transaksi', path: '/accounting/tags', feature: 'accounting/tags' },
-    ]
+    ],
   },
   {
-    icon: BarChart3, 
-    label: 'Financial Reports',
+    icon: Settings, label: 'Settings',
     children: [
-      { label: 'Profit & Loss', path: '/reports/profit-loss', feature: 'reports/profit-loss' },
-      { label: 'Balance Sheet', path: '/reports/balance-sheet', feature: 'reports/balance-sheet' },
-      { label: 'Trial Balance', path: '/reports/trial-balance', feature: 'reports/trial-balance' },
-      { label: 'TB Komparatif', path: '/reports/trial-balance-comparative', feature: 'reports/trial-balance-comparative' },
-      { label: 'Cash Flow (Indirect)', path: '/reports/cashflow-indirect', feature: 'reports/cashflow-indirect' },
-      { label: 'General Ledger', path: '/reports/general-ledger', feature: 'reports/general-ledger' },
-      { label: 'Aged Receivables', path: '/reports/aged-receivables', feature: 'reports/aged-receivables' },
-      { label: 'Aged Payables', path: '/reports/aged-payables', feature: 'reports/aged-payables' },
-      { label: 'Mutasi Pelanggan', path: '/reports/customer-statement', feature: 'reports/customer-statement' },
-      { label: 'Mutasi Supplier', path: '/reports/supplier-statement', feature: 'reports/supplier-statement' },
-      { label: 'Rekap Pajak (PPN)', path: '/reports/tax', feature: 'reports/tax' },
-    ]
-  },
-  { 
-    icon: Settings, 
-    label: 'Settings',
-    children: [
+      { label: 'User Profile', path: '/settings/profile', feature: 'settings/profile' },
+      { label: 'Discount and Taxes', path: '/settings/discount-tax', feature: 'settings/discount-tax' },
+      { label: 'Terms and Conditions', path: '/settings/terms', feature: 'settings/terms' },
+      { label: 'Invoice Theme', path: '/settings/invoice-theme', feature: 'settings/invoice-theme' },
+      { label: 'Printer Settings', path: '/pos/printer-settings', feature: 'pos/printer-settings' },
+      { label: 'Balance Sheet Setting', path: '/settings/balance-sheet', feature: 'settings/balance-sheet' },
+      { label: 'Customize Dashboard', path: '/settings/dashboard', feature: 'settings/dashboard' },
+      { label: 'Enable / Disable Feature', path: '/settings/features', feature: 'settings/features' },
+      { label: 'Show/Hide Fields', path: '/settings/fields', feature: 'settings/fields' },
+      { label: 'Inventory Setting', path: '/settings/inventory', feature: 'settings/inventory' },
+      { label: 'Payment Tracking', path: '/settings/payment-tracking', feature: 'settings/payment-tracking' },
+      { label: 'Banking Details & PayPal.Me', path: '/settings/banking', feature: 'settings/banking' },
+      { label: 'Manage Fields in Documents', path: '/settings/document-fields', feature: 'settings/document-fields' },
       { label: 'Users', path: '/settings/users', feature: 'settings/users' },
       { label: 'Companies', path: '/settings/companies', feature: 'settings/companies' },
       { label: 'Permissions', path: '/settings/permissions', feature: 'settings/permissions' },
       { label: 'Log Activity', path: '/settings/activity-log', feature: 'settings/activity-log' },
-    ]
+    ],
   },
 ];
 
@@ -157,7 +226,7 @@ export const Sidebar: React.FC = () => {
   const { signOut, profile, isAdmin, isCashier } = useAuth();
   const { selectedCompany } = useCompany();
   const { can, bypass, loading: permsLoading } = usePermissions();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Sales', 'Purchases', 'Inventory', 'Financial Reports', 'POS']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Sale', 'Purchase', 'Payment & Cash/Bank', 'Reports']);
 
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev => 
