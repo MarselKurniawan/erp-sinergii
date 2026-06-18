@@ -1,123 +1,155 @@
-## Scope
-Implement 4 major feature groups across DB, RPC, and UI:
+# Restructure Sidebar + Bangun Halaman yang Belum Ada
 
-1. **Inventory Costing (FIFO + Weighted Average)**
-2. **Bank Reconciliation**
-3. **Production Order (Manufacturing)**
-4. **Reporting tambahan + Operational gaps** (soft delete, attachments, notifications, exec dashboard)
+Saya akan **ganti total struktur menu sidebar** sesuai daftar yang Anda kirim, lalu **buat halaman baru** untuk submenu yang belum ada — dikerjakan urut dari atas ke bawah.
 
-Karena ini sangat besar (~15 fitur, ~30+ file), aku breakdown jadi **4 fase migrasi terpisah** supaya bisa di-review per fase dan rollback aman kalau ada masalah.
+## Pemetaan Menu (Nama Baru → Halaman)
 
----
+```text
+Dashboard                                   → /dashboard (ADA)
 
-## Fase 1 — Costing FIFO/Average + Inventory Valuation Report
+Sale
+├─ Create New Sale                          → /sales/invoices?new=1 (ADA, tambah auto-open)
+├─ Sale List                                → /sales/invoices (ADA)
+├─ Create New Estimate          [BARU]      → /sales/estimates/new
+├─ Estimate List                [BARU]      → /sales/estimates
+├─ New Sale Order                           → /sales/orders?new=1 (ADA)
+├─ Sale Order List                          → /sales/orders (ADA)
+└─ Sale Return                  [BARU]      → /sales/returns
 
-### DB
-- Tambah kolom `costing_method` di `companies` (enum: `fifo` | `average`), default `average`
-- Tambah `unit_cost` & `remaining_qty` di `inventory_movements` (untuk FIFO layer tracking)
-- Tambah `average_cost` di `inventory_stock` (untuk WAC running)
-- RPC `compute_cogs(product_id, warehouse_id, qty)` → return COGS sesuai method
-  - **FIFO**: ambil layer tertua dari `inventory_movements` yang `remaining_qty > 0`
-  - **Average**: pakai `inventory_stock.average_cost`
-- Update `_record_inventory_movement`:
-  - Saat IN → buat layer baru (FIFO) atau recompute WAC: `new_avg = (old_qty*old_avg + in_qty*in_cost) / (old_qty+in_qty)`
-  - Saat OUT → konsumsi layer FIFO / decrement WAC qty (avg tetap)
-- Trigger di POS / SO Invoice / Stock Transfer OUT → auto pakai `compute_cogs`
+Purchase
+├─ New Purchase                             → /purchases/bills?new=1 (ADA)
+├─ Purchase List                            → /purchases/bills (ADA)
+├─ New Purchase Order                       → /purchases/orders?new=1 (ADA)
+├─ Purchase Order List                      → /purchases/orders (ADA)
+└─ Purchase Return              [BARU]      → /purchases/returns
 
-### UI
-- `Settings → Akuntansi`: dropdown pilih costing method per company
-- `Reports → Inventory Valuation` (baru): tabel produk × warehouse × qty × avg_cost × total_value, dengan filter as-of date
+Expense                         [BARU GROUP]
+├─ New Expenses                 [BARU]      → /expenses/new
+└─ Expenses List                [BARU]      → /expenses
 
----
+Payment & Cash/Bank
+├─ New Payment                              → /sales/payments?new=1 (ADA, gabungan)
+├─ Payment List                             → /sales/payments + /purchases/payments
+├─ New Cash/Bank Transfer       [BARU]      → /cash-bank/transfers/new
+├─ Cash/Bank Transfer List      [BARU]      → /cash-bank/transfers
+├─ Show Cash/Bank Balance                   → /cash-bank (ADA)
+└─ Fix Payment Mapping Issues   [BARU]      → /cash-bank/fix-mapping
 
-## Fase 2 — Bank Reconciliation
+Receipt                         [BARU]      → /receipts
 
-### DB
-- Table `bank_statements` (id, company_id, account_id [COA bank], period_start, period_end, opening_balance, closing_balance, status, imported_at)
-- Table `bank_statement_lines` (id, statement_id, txn_date, description, ref_number, debit, credit, matched_payment_id, matched_je_line_id, status: `unmatched|matched|manual`)
-- RPC `auto_match_bank_lines(statement_id)` → fuzzy match by date±3 hari + amount exact ke `payments` & `journal_entry_lines`
-- RPC `finalize_bank_recon(statement_id)` → set semua lines matched/manual, lock statement
+Capital Transaction             [BARU GROUP]
+├─ New Transaction              [BARU]      → /capital/new
+└─ Transaction List             [BARU]      → /capital
 
-### UI
-- `Banking → Rekonsiliasi Bank`:
-  - List bank statement per akun
-  - Import CSV (kolom: date, description, ref, debit, credit) atau input manual
-  - Tampilan side-by-side: bank lines kiri, payment/JE kandidat kanan
-  - Tombol Auto-match + manual link/unlink + Finalize
+Accounts
+├─ New Account                              → /accounts?new=1 (ADA)
+├─ Account List                             → /accounts (ADA)
+└─ Manage Opening Balance       [BARU]      → /accounts/opening-balance
 
----
+Journal
+├─ New Journal                              → /journal?new=1 (ADA)
+└─ Journal List                             → /journal (ADA)
 
-## Fase 3 — Production Order (Manufacturing)
+Customer & Supplier
+├─ New Customer/Supplier                    → /contacts/new (gabung)
+├─ Customer/Supplier List       [BARU]      → /contacts (gabungan Customer + Supplier)
+└─ Show Receivables/Payables    [BARU]      → /contacts/receivables-payables
 
-### DB
-- Table `production_orders` (id, company_id, order_number, product_id [finished], recipe_id, planned_qty, produced_qty, warehouse_id, start_date, finish_date, status: `draft|in_progress|completed|cancelled`, total_cost)
-- Table `production_order_materials` (id, po_id, material_id, planned_qty, consumed_qty, unit_cost, total_cost) — di-snapshot dari recipe saat draft
-- RPC `start_production(po_id)`:
-  - Consume material → OUT dari warehouse (pakai costing_method)
-  - Buat JE: D WIP / C Inventory Material
-- RPC `complete_production(po_id, actual_qty)`:
-  - IN finished good ke warehouse dengan `unit_cost = total_material_cost / actual_qty`
-  - Buat JE: D Inventory Finished / C WIP
-- Tambah COA wajib: `WIP (Work In Progress)` 1-1400
+Product/Services
+├─ New Product                              → /products?new=1 (ADA)
+└─ Product List                             → /products (ADA)
 
-### UI
-- `Manufacturing → Production Order` (menu baru di sidebar):
-  - List, Create (pilih produk + recipe + qty + warehouse → auto-load BOM)
-  - Detail dengan tombol Start → Complete
-  - Cetak Work Order
+Reports
+├─ All Reports                              → /reports (ADA list)
+├─ Sales Report
+│  ├─ Sales / Payment Report    [BARU]      → /reports/sales-payment
+│  ├─ Product Sales Report      [BARU]      → /reports/product-sales
+│  ├─ Sales By Clients - Top 5  [BARU]      → /reports/top-clients
+│  ├─ Sales By Products - Top 5 [BARU]      → /reports/top-products
+│  ├─ Sale Order Report         [BARU]      → /reports/sale-orders
+│  ├─ Invoice Aging Sales                   → /reports/aged-receivables (ADA)
+│  ├─ Detailed Sales Report                 → /reports/sales (ADA)
+│  └─ Sales Return Report       [BARU]      → /reports/sales-returns
+├─ Purchase Report
+│  ├─ Product Purchase Report   [BARU]      → /reports/product-purchase
+│  ├─ Purchase Report                       → /reports/purchases (ADA)
+│  ├─ Invoice Aging Supplier                → /reports/aged-payables (ADA)
+│  ├─ Purchase Order Report     [BARU]      → /reports/purchase-orders
+│  ├─ Detailed Purchase Report  [BARU]      → /reports/purchases-detailed
+│  └─ Purchase Return Report    [BARU]      → /reports/purchase-returns
+├─ Profit & Loss Report
+│  ├─ Monthly/Weekly/Daily P&L - COGS              [BARU]   → /reports/pl-cogs-period
+│  ├─ Monthly/Weekly/Daily P&L - Stock Changes    [BARU]   → /reports/pl-stock-period
+│  ├─ P&L Using COGS                                → /reports/profit-loss (ADA)
+│  ├─ P&L Using Opening/Closing Stock   [BARU]      → /reports/pl-stock
+│  ├─ Product wise Profit/Loss          [BARU]      → /reports/pl-product
+│  ├─ Invoice wise Profit/Loss          [BARU]      → /reports/pl-invoice
+│  └─ Client wise Profit/Loss           [BARU]      → /reports/pl-client
+├─ Balance Sheet Report
+│  ├─ Balance Sheet                                 → /reports/balance-sheet (ADA)
+│  └─ Trial Balance                                 → /reports/trial-balance (ADA)
+└─ Other Reports
+   ├─ Expense Report             [BARU]    → /reports/expense
+   ├─ Detailed Expense Report    [BARU]    → /reports/expense-detailed
+   ├─ Inventory Report                     → /reports/inventory (ADA)
+   ├─ Day Book Report            [BARU]    → /reports/day-book
+   ├─ Cash Flow Statement                  → /reports/cashflow (ADA)
+   └─ Tax Report                           → /reports/tax (ADA)
 
----
+Settings → Primary Settings
+├─ User Profile                             → /settings/profile (ADA)
+├─ Discount and Taxes          [BARU]       → /settings/discount-tax
+├─ Terms and Conditions        [BARU]       → /settings/terms
+├─ Invoice Theme               [BARU]       → /settings/invoice-theme
+├─ Printer Settings                         → /pos/printer-settings (ADA)
+├─ Balance Sheet Setting       [BARU]       → /settings/balance-sheet
+├─ Customize Dashboard         [BARU]       → /settings/dashboard
+├─ Enable / Disable Feature    [BARU]       → /settings/features
+├─ Show/Hide Fields            [BARU]       → /settings/fields
+├─ Inventory Setting           [BARU]       → /settings/inventory
+├─ Payment Tracking            [BARU]       → /settings/payment-tracking
+├─ Banking Details & PayPal.Me [BARU]       → /settings/banking
+└─ Manage Fields in Documents  [BARU]       → /settings/document-fields
+```
 
-## Fase 4 — Reporting tambahan + Operational gaps
+## Strategi Eksekusi (Urut dari Atas)
 
-### Reporting (UI baru, semua read dari existing tables)
-- **Trial Balance Komparatif**: 2+ periode side-by-side, kolom: Akun | Period A Dr | Period A Cr | Period B Dr | Period B Cr | Variance
-- **Cash Flow Indirect**: Net Income → adjustment non-cash (depresiasi) → ∆ working capital (AR, AP, Inventory) → CF Operasi + Investing + Financing
-- **Customer Statement**: per customer, semua invoice + payment + saldo running per tanggal
-- **Supplier Statement**: per supplier, semua bill + payment + saldo running
+Karena halaman baru yang dibutuhkan **>30 halaman**, saya kerjakan **bertahap urut atas → bawah** sesuai permintaan, **batch per grup menu**, supaya bisa Anda review per batch tanpa nunggu lama.
 
-### Soft Delete / Void
-- Tambah `voided_at`, `voided_by`, `void_reason` di: `invoices`, `bills`, `payments`, `journal_entries`, `pos_transactions`, `sales_orders`, `purchase_orders`
-- RPC `void_transaction(entity_type, entity_id, reason)`:
-  - Set voided_* fields
-  - Buat reversing JE (D ↔ C swap) tanggal hari ini
-  - Audit log otomatis (trigger sudah ada)
-- UI: tombol "Void" di detail transaksi (ganti tombol Delete untuk role non-superadmin), dialog input reason, filter "Sembunyikan voided" di list
+### Batch 1 — Sidebar Restructure + Sale group
+- Tulis ulang `src/components/layout/Sidebar.tsx` total dengan struktur menu di atas (semua item terdaftar; submenu yang halaman-nya belum ada → arahkan ke route baru).
+- Tambah grup menu baru di urutan persis seperti yang Anda kirim.
+- Buat halaman: **Estimates (list + new)**, **Sales Return**.
+- Tambah route di `App.tsx`.
 
-### Attachment
-- Storage bucket `transaction-attachments` (private, RLS by company)
-- Table `transaction_attachments` (id, company_id, entity_type, entity_id, file_path, file_name, mime_type, size, uploaded_by, uploaded_at)
-- Component `<AttachmentList entityType entityId />` reusable → pasang di detail Invoice/Bill/GR/Payment/JE
-- Upload (drag-drop), preview thumbnail untuk image, download untuk PDF
+### Batch 2 — Purchase + Expense + Payment/Cash Bank
+- Buat: **Purchase Return**, **Expenses (list + new)**, **Cash/Bank Transfer (list + new)**, **Fix Payment Mapping**.
 
-### Notifications
-- Table `notifications` (id, user_id, company_id, type, title, message, link, read_at, created_at)
-- Scheduled function (pg_cron, daily 6 AM):
-  - Invoice jatuh tempo ≤7 hari & outstanding > 0 → notify sales/admin
-  - Bill jatuh tempo ≤7 hari → notify purchasing/admin
-  - Stock < min_stock → notify warehouse PIC
-  - PO/SO status `pending_approval` >24 jam → notify approver
-- UI: bell icon di header, dropdown list, badge unread count, mark as read
+### Batch 3 — Receipt + Capital Transaction + Accounts/Journal extras
+- Buat: **Receipt**, **Capital Transaction (list + new)**, **Manage Opening Balance**.
 
-### Executive Dashboard (Consolidated)
-- Halaman `/dashboard/executive` (akses: superadmin/admin only)
-- Tidak filter per company — tampil semua company user punya akses
-- KPI Cards: Total Revenue, Net Profit, Cash Position, AR, AP (sum lintas company)
-- Chart: Revenue per Company (bar), Profit Margin trend (line), Top 5 Products lintas company
-- Table: ringkasan per company (Revenue, Profit, Outstanding AR/AP, Stock Value)
+### Batch 4 — Customer & Supplier gabungan
+- Buat halaman gabungan **Contacts** dan **Receivables/Payables** combo view.
 
----
+### Batch 5 — Reports baru (Sales group, Purchase group)
+- Buat 6 report Sales + 5 report Purchase.
 
-## Eksekusi
-Aku akan kerjakan **Fase 1 → 2 → 3 → 4 berurutan**. Setiap fase = 1 migrasi DB + UI changes, lalu lanjut fase berikutnya. Total estimasi ~4 ronde kerja besar.
+### Batch 6 — Reports P&L variants + Other reports
+- Buat 6 P&L variant + 3 Other reports baru.
 
-## Catatan teknis
-- Semua tabel baru: RLS by `user_has_company_access` + GRANT authenticated/service_role
-- Semua RPC: `SECURITY DEFINER`, cek akses company di awal
-- Period closing guard otomatis berlaku (sudah ada trigger di JE, invoices, bills, dll)
-- Audit log otomatis (trigger sudah pasang di 40+ tabel)
-- Bahasa UI: Indonesian
-- Komponen dropdown: `SearchableSelect`
+### Batch 7 — Settings sub-pages
+- Buat 11 halaman settings.
 
-## Pertanyaan sebelum mulai
-Mau aku langsung gas Fase 1 (Costing FIFO/Avg + Valuation Report) sekarang, atau ada penyesuaian scope di salah satu fase?
+## Catatan Penting
+
+1. **Tidak ada fitur lama yang dihapus** — Inventory, POS, Manufacturing, Banking Reconciliation, Fixed Assets, Period Closing dll tetap ada tapi **dipindah ke section "Advanced" di bawah** supaya menu utama bersih sesuai spek Anda. Konfirmasi kalau mau dibuang total.
+2. **Bahasa menu** akan saya pakai **persis seperti yang Anda kirim (English)** karena daftar Anda English. Kalau mau Bahasa Indonesia, bilang sebelum saya mulai.
+3. **Database** — beberapa halaman butuh tabel baru (estimates, sales_returns, purchase_returns, expenses, cash_bank_transfers, receipts, capital_transactions, opening_balances). Tiap batch akan disertai migrasi.
+4. **Estimasi total** — 7 batch, masing-masing 1 reply.
+
+## Mulai Batch 1?
+
+Konfirmasi:
+- (A) **Mulai Batch 1 sekarang** (Sidebar baru + Sale group), atau
+- (B) Ada nama/urutan menu yang perlu diubah dulu, atau
+- (C) Pilih bahasa menu (English seperti spek vs Indonesia)?
