@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { Plus, Search, Receipt } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
@@ -36,6 +36,7 @@ const Expenses: React.FC = () => {
   const { getExpenseAccounts, getCashBankAccounts } = useAccounts();
   const { suppliers } = useSuppliers();
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const [rows, setRows] = useState<ExpenseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -70,8 +71,11 @@ const Expenses: React.FC = () => {
 
   useEffect(() => { fetchRows(); }, [selectedCompany]);
   useEffect(() => {
-    if (params.get('new') === '1') { setOpen(true); params.delete('new'); setParams(params, { replace: true }); }
-  }, [params]);
+    if (params.get('new') === '1' || location.pathname.endsWith('/new')) {
+      setOpen(true);
+      if (params.get('new')) { params.delete('new'); setParams(params, { replace: true }); }
+    }
+  }, [params, location.pathname]);
 
   const total = useMemo(() => (parseFloat(form.amount || '0') || 0) + (parseFloat(form.tax_amount || '0') || 0), [form]);
 
