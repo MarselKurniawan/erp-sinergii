@@ -75,6 +75,10 @@ import NotFound from "./pages/NotFound";
 import Permissions from "./pages/settings/Permissions";
 import { RequireFeature } from "@/components/RequireFeature";
 import ComingSoon from "./pages/ComingSoon";
+import Expenses from "./pages/expenses/Expenses";
+import CashBankTransfers from "./pages/cashbank/CashBankTransfers";
+import FixPaymentMapping from "./pages/cashbank/FixPaymentMapping";
+import PurchaseReturns from "./pages/purchases/PurchaseReturns";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -164,14 +168,14 @@ const App = () => (
                 <Route path="/sales/estimates/new" element={<Guard f="sales/estimates"><ComingSoon title="Create New Estimate" /></Guard>} />
                 <Route path="/sales/returns" element={<Guard f="sales/returns"><ComingSoon title="Sale Return" /></Guard>} />
                 {/* Purchase group */}
-                <Route path="/purchases/returns" element={<Guard f="purchases/returns"><ComingSoon title="Purchase Return" /></Guard>} />
+                <Route path="/purchases/returns" element={<Guard f="purchases/returns"><PurchaseReturns /></Guard>} />
                 {/* Expense */}
-                <Route path="/expenses" element={<Guard f="expenses"><ComingSoon title="Expenses List" /></Guard>} />
-                <Route path="/expenses/new" element={<Guard f="expenses"><ComingSoon title="New Expense" /></Guard>} />
+                <Route path="/expenses" element={<Guard f="expenses"><Expenses /></Guard>} />
+                <Route path="/expenses/new" element={<Guard f="expenses"><Expenses /></Guard>} />
                 {/* Cash/Bank extras */}
-                <Route path="/cash-bank/transfers" element={<Guard f="cash-bank/transfers"><ComingSoon title="Cash/Bank Transfer List" /></Guard>} />
-                <Route path="/cash-bank/transfers/new" element={<Guard f="cash-bank/transfers"><ComingSoon title="New Cash/Bank Transfer" /></Guard>} />
-                <Route path="/cash-bank/fix-mapping" element={<Guard f="cash-bank/fix-mapping"><ComingSoon title="Fix Payment Mapping Issues" /></Guard>} />
+                <Route path="/cash-bank/transfers" element={<Guard f="cash-bank/transfers"><CashBankTransfers /></Guard>} />
+                <Route path="/cash-bank/transfers/new" element={<Guard f="cash-bank/transfers"><CashBankTransfers /></Guard>} />
+                <Route path="/cash-bank/fix-mapping" element={<Guard f="cash-bank/fix-mapping"><FixPaymentMapping /></Guard>} />
                 {/* Receipt */}
                 <Route path="/receipts" element={<Guard f="receipts"><ComingSoon title="Receipts" /></Guard>} />
                 {/* Capital */}
