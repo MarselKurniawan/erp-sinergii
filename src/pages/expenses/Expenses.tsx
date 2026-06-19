@@ -210,17 +210,17 @@ const Expenses: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm font-medium">Akun Beban *</label>
-                <SearchableSelect value={form.expense_account_id} onValueChange={v => setForm({ ...form, expense_account_id: v })}
+                <SearchableSelect value={form.expense_account_id} onChange={v => setForm({ ...form, expense_account_id: v })}
                   options={expenseAccs.map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }))} placeholder="Pilih akun beban" />
               </div>
               <div>
                 <label className="text-sm font-medium">Dibayar Dari (Kas/Bank) *</label>
-                <SearchableSelect value={form.payment_account_id} onValueChange={v => setForm({ ...form, payment_account_id: v })}
+                <SearchableSelect value={form.payment_account_id} onChange={v => setForm({ ...form, payment_account_id: v })}
                   options={cashAccs.map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }))} placeholder="Pilih akun kas/bank" />
               </div>
               <div>
                 <label className="text-sm font-medium">Supplier (opsional)</label>
-                <SearchableSelect value={form.supplier_id} onValueChange={v => setForm({ ...form, supplier_id: v })}
+                <SearchableSelect value={form.supplier_id} onChange={v => setForm({ ...form, supplier_id: v })}
                   options={suppliers.map(s => ({ value: s.id, label: s.name }))} placeholder="Pilih supplier" />
               </div>
               <div>
