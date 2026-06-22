@@ -330,6 +330,95 @@ export type Database = {
           },
         ]
       }
+      capital_transactions: {
+        Row: {
+          amount: number
+          cash_account_id: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          equity_account_id: string
+          id: string
+          journal_entry_id: string | null
+          notes: string | null
+          owner_name: string | null
+          transaction_date: string
+          transaction_number: string
+          transaction_type: string
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount?: number
+          cash_account_id: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          equity_account_id: string
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          owner_name?: string | null
+          transaction_date?: string
+          transaction_number: string
+          transaction_type: string
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          cash_account_id?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          equity_account_id?: string
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          owner_name?: string | null
+          transaction_date?: string
+          transaction_number?: string
+          transaction_type?: string
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_transactions_cash_account_id_fkey"
+            columns: ["cash_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_transactions_equity_account_id_fkey"
+            columns: ["equity_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_transactions_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_bank_transfers: {
         Row: {
           amount: number
@@ -3206,6 +3295,108 @@ export type Database = {
             columns: ["receipt_setting_id"]
             isOneToOne: false
             referencedRelation: "receipt_settings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipts: {
+        Row: {
+          amount: number
+          cash_account_id: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          income_account_id: string
+          journal_entry_id: string | null
+          notes: string | null
+          receipt_date: string
+          receipt_number: string
+          reference_no: string | null
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount?: number
+          cash_account_id: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          income_account_id: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          receipt_date?: string
+          receipt_number: string
+          reference_no?: string | null
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          cash_account_id?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          income_account_id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          receipt_date?: string
+          receipt_number?: string
+          reference_no?: string | null
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_cash_account_id_fkey"
+            columns: ["cash_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_income_account_id_fkey"
+            columns: ["income_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
             referencedColumns: ["id"]
           },
         ]
