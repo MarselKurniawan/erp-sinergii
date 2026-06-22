@@ -79,6 +79,9 @@ import Expenses from "./pages/expenses/Expenses";
 import CashBankTransfers from "./pages/cashbank/CashBankTransfers";
 import FixPaymentMapping from "./pages/cashbank/FixPaymentMapping";
 import PurchaseReturns from "./pages/purchases/PurchaseReturns";
+import Receipts from "./pages/receipts/Receipts";
+import CapitalTransactions from "./pages/capital/CapitalTransactions";
+import ManageOpeningBalance from "./pages/accounts/ManageOpeningBalance";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -177,12 +180,13 @@ const App = () => (
                 <Route path="/cash-bank/transfers/new" element={<Guard f="cash-bank/transfers"><CashBankTransfers /></Guard>} />
                 <Route path="/cash-bank/fix-mapping" element={<Guard f="cash-bank/fix-mapping"><FixPaymentMapping /></Guard>} />
                 {/* Receipt */}
-                <Route path="/receipts" element={<Guard f="receipts"><ComingSoon title="Receipts" /></Guard>} />
+                <Route path="/receipts" element={<Guard f="receipts"><Receipts /></Guard>} />
+                <Route path="/receipts/new" element={<Guard f="receipts"><Receipts /></Guard>} />
                 {/* Capital */}
-                <Route path="/capital" element={<Guard f="capital"><ComingSoon title="Capital Transaction List" /></Guard>} />
-                <Route path="/capital/new" element={<Guard f="capital"><ComingSoon title="New Capital Transaction" /></Guard>} />
+                <Route path="/capital" element={<Guard f="capital"><CapitalTransactions /></Guard>} />
+                <Route path="/capital/new" element={<Guard f="capital"><CapitalTransactions /></Guard>} />
                 {/* Accounts extras */}
-                <Route path="/accounts/opening-balance" element={<Guard f="accounts/opening-balance"><ComingSoon title="Manage Opening Balance" /></Guard>} />
+                <Route path="/accounts/opening-balance" element={<Guard f="accounts/opening-balance"><ManageOpeningBalance /></Guard>} />
                 {/* Contacts */}
                 <Route path="/contacts" element={<Guard f="contacts"><ComingSoon title="Customer/Supplier List" /></Guard>} />
                 <Route path="/contacts/new" element={<Guard f="contacts"><ComingSoon title="New Customer/Supplier" /></Guard>} />
