@@ -176,7 +176,7 @@ const Receipts: React.FC = () => {
               <label className="text-sm font-medium">Customer (opsional)</label>
               <SearchableSelect
                 value={form.customer_id}
-                onValueChange={(v) => setForm({ ...form, customer_id: v })}
+                onChange={(v) => setForm({ ...form, customer_id: v })}
                 options={customers.map(c => ({ value: c.id, label: c.name }))}
                 placeholder="Pilih customer"
               />
@@ -185,7 +185,7 @@ const Receipts: React.FC = () => {
               <label className="text-sm font-medium">Akun Pendapatan</label>
               <SearchableSelect
                 value={form.income_account_id}
-                onValueChange={(v) => setForm({ ...form, income_account_id: v })}
+                onChange={(v) => setForm({ ...form, income_account_id: v })}
                 options={getRevenueAccounts().map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }))}
                 placeholder="Pilih akun pendapatan"
               />
@@ -194,7 +194,7 @@ const Receipts: React.FC = () => {
               <label className="text-sm font-medium">Akun Kas/Bank (Diterima ke)</label>
               <SearchableSelect
                 value={form.cash_account_id}
-                onValueChange={(v) => setForm({ ...form, cash_account_id: v })}
+                onChange={(v) => setForm({ ...form, cash_account_id: v })}
                 options={getCashBankAccounts().map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }))}
                 placeholder="Pilih akun kas"
               />
