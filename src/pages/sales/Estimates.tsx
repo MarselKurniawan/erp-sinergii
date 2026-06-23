@@ -112,7 +112,7 @@ const Estimates: React.FC = () => {
         total_amount: est.total_amount, outstanding_amount: est.total_amount, paid_amount: 0, created_by: user.id,
       }).select().single();
       if (error) throw error;
-      await (supabase.from('invoice_items') as any).insert((est.estimate_items || []).map((l: any) => ({
+      await ((supabase as any).from('invoice_items')).insert((est.estimate_items || []).map((l: any) => ({
         invoice_id: inv.id, product_id: l.product_id, quantity: l.quantity, unit_price: l.unit_price,
         discount_percent: l.discount_percent, tax_percent: l.tax_percent, total: l.total,
       })));
