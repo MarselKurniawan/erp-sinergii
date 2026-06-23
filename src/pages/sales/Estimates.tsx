@@ -83,14 +83,14 @@ const Estimates: React.FC = () => {
     try {
       const { data: numData } = await supabase.rpc('generate_document_number', { p_company_id: selectedCompany.id, p_document_type: 'EST' });
       const num = (numData as string) || `EST-${Date.now()}`;
-      const { data: est, error } = await supabase.from('estimates').insert({
+      const { data: est, error } = await (supabase.from('estimates') as any).insert({
         company_id: selectedCompany.id, estimate_number: num,
         estimate_date: form.estimate_date, valid_until: form.valid_until || null,
         customer_id: form.customer_id, notes: form.notes || null,
         subtotal, tax_amount: tax, total_amount: total, status: 'sent', created_by: user.id,
       }).select().single();
       if (error) throw error;
-      await supabase.from('estimate_items').insert(form.items.map((l: any) => ({
+      await (supabase.from('estimate_items') as any).insert(form.items.map((l: any) => ({
         estimate_id: est.id, product_id: l.product_id || null, description: l.description || null,
         quantity: l.quantity, unit_price: l.unit_price, tax_percent: l.tax_percent,
         discount_percent: l.discount_percent, total: lineTotal(l),
@@ -104,7 +104,7 @@ const Estimates: React.FC = () => {
     try {
       const { data: numData } = await supabase.rpc('generate_document_number', { p_company_id: selectedCompany.id, p_document_type: 'INV' });
       const inum = (numData as string) || `INV-${Date.now()}`;
-      const { data: inv, error } = await supabase.from('invoices').insert({
+      const { data: inv, error } = await (supabase.from('invoices') as any).insert({
         company_id: selectedCompany.id, invoice_number: inum,
         customer_id: est.customer_id, invoice_date: new Date().toISOString().slice(0, 10),
         due_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
@@ -112,11 +112,11 @@ const Estimates: React.FC = () => {
         total_amount: est.total_amount, outstanding_amount: est.total_amount, paid_amount: 0, created_by: user.id,
       }).select().single();
       if (error) throw error;
-      await supabase.from('invoice_items').insert((est.estimate_items || []).map((l: any) => ({
+      await (supabase.from('invoice_items') as any).insert((est.estimate_items || []).map((l: any) => ({
         invoice_id: inv.id, product_id: l.product_id, quantity: l.quantity, unit_price: l.unit_price,
         discount_percent: l.discount_percent, tax_percent: l.tax_percent, total: l.total,
       })));
-      await supabase.from('estimates').update({ status: 'accepted', converted_to_invoice_id: inv.id }).eq('id', est.id);
+      await (supabase.from('estimates') as any).update({ status: 'accepted', converted_to_invoice_id: inv.id }).eq('id', est.id);
       toast.success(`Invoice ${inum} dibuat`); load();
     } catch (e: any) { toast.error(e.message || 'Gagal konversi'); }
   };

@@ -81,14 +81,14 @@ const SalesReturns: React.FC = () => {
     try {
       const { data: numData } = await supabase.rpc('generate_document_number', { p_company_id: selectedCompany.id, p_document_type: 'SRN' });
       const num = (numData as string) || `SRN-${Date.now()}`;
-      const { data: sr, error } = await supabase.from('sales_returns').insert({
+      const { data: sr, error } = await (supabase.from('sales_returns') as any).insert({
         company_id: selectedCompany.id, return_number: num, return_date: form.return_date,
         customer_id: form.customer_id, warehouse_id: form.warehouse_id || null,
         reason: form.reason || null, refund_account_id: form.refund_account_id,
         subtotal, tax_amount: tax, total_amount: total, status: 'posted', notes: form.notes || null, created_by: user.id,
       }).select().single();
       if (error) throw error;
-      await supabase.from('sales_return_items').insert(form.items.map((l: any) => ({
+      await (supabase.from('sales_return_items') as any).insert(form.items.map((l: any) => ({
         return_id: sr.id, product_id: l.product_id || null,
         quantity: l.quantity, unit_price: l.unit_price, tax_percent: l.tax_percent, total: lineTotal(l),
       })));
