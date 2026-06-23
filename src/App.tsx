@@ -82,6 +82,23 @@ import PurchaseReturns from "./pages/purchases/PurchaseReturns";
 import Receipts from "./pages/receipts/Receipts";
 import CapitalTransactions from "./pages/capital/CapitalTransactions";
 import ManageOpeningBalance from "./pages/accounts/ManageOpeningBalance";
+import Contacts from "./pages/contacts/Contacts";
+import ReceivablesPayables from "./pages/contacts/ReceivablesPayables";
+import Estimates from "./pages/sales/Estimates";
+import SalesReturns from "./pages/sales/SalesReturns";
+import SalesPaymentReport from "./pages/reports/SalesPaymentReport";
+import ProductSalesReport from "./pages/reports/ProductSalesReport";
+import TopClientsReport from "./pages/reports/TopClientsReport";
+import TopProductsReport from "./pages/reports/TopProductsReport";
+import SaleOrderReport from "./pages/reports/SaleOrderReport";
+import SalesReturnReport from "./pages/reports/SalesReturnReport";
+import ProductPurchaseReport from "./pages/reports/ProductPurchaseReport";
+import PurchaseOrderReport from "./pages/reports/PurchaseOrderReport";
+import PurchaseDetailedReport from "./pages/reports/PurchaseDetailedReport";
+import PurchaseReturnReport from "./pages/reports/PurchaseReturnReport";
+import ExpenseReport from "./pages/reports/ExpenseReport";
+import ExpenseDetailedReport from "./pages/reports/ExpenseDetailedReport";
+import DayBookReport from "./pages/reports/DayBookReport";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -167,9 +184,9 @@ const App = () => (
                 <Route path="/settings/permissions" element={<Permissions />} />
                 <Route path="/settings/profile" element={<Profile />} />
                 {/* Sale group */}
-                <Route path="/sales/estimates" element={<Guard f="sales/estimates"><ComingSoon title="Estimate List" /></Guard>} />
-                <Route path="/sales/estimates/new" element={<Guard f="sales/estimates"><ComingSoon title="Create New Estimate" /></Guard>} />
-                <Route path="/sales/returns" element={<Guard f="sales/returns"><ComingSoon title="Sale Return" /></Guard>} />
+                <Route path="/sales/estimates" element={<Guard f="sales/estimates"><Estimates /></Guard>} />
+                <Route path="/sales/estimates/new" element={<Guard f="sales/estimates"><Estimates /></Guard>} />
+                <Route path="/sales/returns" element={<Guard f="sales/returns"><SalesReturns /></Guard>} />
                 {/* Purchase group */}
                 <Route path="/purchases/returns" element={<Guard f="purchases/returns"><PurchaseReturns /></Guard>} />
                 {/* Expense */}
@@ -188,29 +205,29 @@ const App = () => (
                 {/* Accounts extras */}
                 <Route path="/accounts/opening-balance" element={<Guard f="accounts/opening-balance"><ManageOpeningBalance /></Guard>} />
                 {/* Contacts */}
-                <Route path="/contacts" element={<Guard f="contacts"><ComingSoon title="Customer/Supplier List" /></Guard>} />
-                <Route path="/contacts/new" element={<Guard f="contacts"><ComingSoon title="New Customer/Supplier" /></Guard>} />
-                <Route path="/contacts/receivables-payables" element={<Guard f="contacts/receivables-payables"><ComingSoon title="Receivables & Payables" /></Guard>} />
+                <Route path="/contacts" element={<Guard f="contacts"><Contacts /></Guard>} />
+                <Route path="/contacts/new" element={<Guard f="contacts"><Contacts /></Guard>} />
+                <Route path="/contacts/receivables-payables" element={<Guard f="contacts/receivables-payables"><ReceivablesPayables /></Guard>} />
                 {/* Reports - new */}
-                <Route path="/reports/sales-payment" element={<Guard f="reports/sales-payment"><ComingSoon title="Sales / Payment Report" /></Guard>} />
-                <Route path="/reports/product-sales" element={<Guard f="reports/product-sales"><ComingSoon title="Product Sales Report" /></Guard>} />
-                <Route path="/reports/top-clients" element={<Guard f="reports/top-clients"><ComingSoon title="Sales By Clients - Top 5" /></Guard>} />
-                <Route path="/reports/top-products" element={<Guard f="reports/top-products"><ComingSoon title="Sales By Products - Top 5" /></Guard>} />
-                <Route path="/reports/sale-orders" element={<Guard f="reports/sale-orders"><ComingSoon title="Sale Order Report" /></Guard>} />
-                <Route path="/reports/sales-returns" element={<Guard f="reports/sales-returns"><ComingSoon title="Sales Return Report" /></Guard>} />
-                <Route path="/reports/product-purchase" element={<Guard f="reports/product-purchase"><ComingSoon title="Product Purchase Report" /></Guard>} />
-                <Route path="/reports/purchase-orders" element={<Guard f="reports/purchase-orders"><ComingSoon title="Purchase Order Report" /></Guard>} />
-                <Route path="/reports/purchases-detailed" element={<Guard f="reports/purchases-detailed"><ComingSoon title="Detailed Purchase Report" /></Guard>} />
-                <Route path="/reports/purchase-returns" element={<Guard f="reports/purchase-returns"><ComingSoon title="Purchase Return Report" /></Guard>} />
+                <Route path="/reports/sales-payment" element={<Guard f="reports/sales-payment"><SalesPaymentReport /></Guard>} />
+                <Route path="/reports/product-sales" element={<Guard f="reports/product-sales"><ProductSalesReport /></Guard>} />
+                <Route path="/reports/top-clients" element={<Guard f="reports/top-clients"><TopClientsReport /></Guard>} />
+                <Route path="/reports/top-products" element={<Guard f="reports/top-products"><TopProductsReport /></Guard>} />
+                <Route path="/reports/sale-orders" element={<Guard f="reports/sale-orders"><SaleOrderReport /></Guard>} />
+                <Route path="/reports/sales-returns" element={<Guard f="reports/sales-returns"><SalesReturnReport /></Guard>} />
+                <Route path="/reports/product-purchase" element={<Guard f="reports/product-purchase"><ProductPurchaseReport /></Guard>} />
+                <Route path="/reports/purchase-orders" element={<Guard f="reports/purchase-orders"><PurchaseOrderReport /></Guard>} />
+                <Route path="/reports/purchases-detailed" element={<Guard f="reports/purchases-detailed"><PurchaseDetailedReport /></Guard>} />
+                <Route path="/reports/purchase-returns" element={<Guard f="reports/purchase-returns"><PurchaseReturnReport /></Guard>} />
                 <Route path="/reports/pl-cogs-period" element={<Guard f="reports/pl-cogs-period"><ComingSoon title="P&L Periodic (COGS)" /></Guard>} />
                 <Route path="/reports/pl-stock-period" element={<Guard f="reports/pl-stock-period"><ComingSoon title="P&L Periodic (Stock)" /></Guard>} />
                 <Route path="/reports/pl-stock" element={<Guard f="reports/pl-stock"><ComingSoon title="P&L Using Opening/Closing Stock" /></Guard>} />
                 <Route path="/reports/pl-product" element={<Guard f="reports/pl-product"><ComingSoon title="Product wise Profit/Loss" /></Guard>} />
                 <Route path="/reports/pl-invoice" element={<Guard f="reports/pl-invoice"><ComingSoon title="Invoice wise Profit/Loss" /></Guard>} />
                 <Route path="/reports/pl-client" element={<Guard f="reports/pl-client"><ComingSoon title="Client wise Profit/Loss" /></Guard>} />
-                <Route path="/reports/expense" element={<Guard f="reports/expense"><ComingSoon title="Expense Report" /></Guard>} />
-                <Route path="/reports/expense-detailed" element={<Guard f="reports/expense-detailed"><ComingSoon title="Detailed Expense Report" /></Guard>} />
-                <Route path="/reports/day-book" element={<Guard f="reports/day-book"><ComingSoon title="Day Book Report" /></Guard>} />
+                <Route path="/reports/expense" element={<Guard f="reports/expense"><ExpenseReport /></Guard>} />
+                <Route path="/reports/expense-detailed" element={<Guard f="reports/expense-detailed"><ExpenseDetailedReport /></Guard>} />
+                <Route path="/reports/day-book" element={<Guard f="reports/day-book"><DayBookReport /></Guard>} />
                 {/* Settings - new */}
                 <Route path="/settings/discount-tax" element={<ComingSoon title="Discount and Taxes" />} />
                 <Route path="/settings/terms" element={<ComingSoon title="Terms and Conditions" />} />
