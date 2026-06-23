@@ -15,7 +15,7 @@ const ProductPurchaseReport: React.FC = () => {
     const bills = await supabase.from('bills').select('id').eq('company_id', selectedCompany.id).is('voided_at', null).gte('bill_date', from).lte('bill_date', to);
     const ids = (bills.data || []).map((b: any) => b.id);
     if (ids.length === 0) { setRows([]); return; }
-    const items = await supabase.from('bill_items').select('product_id, quantity, total, products(name, sku)').in('bill_id', ids);
+    const items = await (supabase as any).from('bill_items').select('product_id, quantity, total, products(name, sku)').in('bill_id', ids);
     const map: Record<string, any> = {};
     (items.data || []).forEach((it: any) => {
       const k = it.product_id || 'none';
