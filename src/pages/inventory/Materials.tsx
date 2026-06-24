@@ -17,6 +17,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { unitOptions } from '@/lib/units';
 
 interface Material {
   id: string;
@@ -234,12 +235,11 @@ export const Materials: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Satuan</label>
-                  <Input
+                  <SearchableSelect
+                    options={unitOptions()}
                     value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    placeholder="pcs"
-                    className="input-field"
-                    required
+                    onChange={(value) => setFormData({ ...formData, unit: value })}
+                    placeholder="Pilih satuan"
                   />
                 </div>
                 <div>
@@ -251,6 +251,11 @@ export const Materials: React.FC = () => {
                     placeholder="0"
                     className="input-field"
                   />
+                  {editingMaterial && editingMaterial.stock_quantity > 0 && parseFloat(formData.cost_price || '0') !== editingMaterial.cost_price && (
+                    <p className="text-xs text-warning mt-1">
+                      Avg dengan harga lama: {formatCurrency(((editingMaterial.stock_quantity * editingMaterial.cost_price) + (parseFloat(formData.stock_quantity || '0') * parseFloat(formData.cost_price || '0'))) / Math.max(1, editingMaterial.stock_quantity + parseFloat(formData.stock_quantity || '0')))}
+                    </p>
+                  )}
                 </div>
               </div>
               <div>
