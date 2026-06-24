@@ -99,6 +99,12 @@ import PurchaseReturnReport from "./pages/reports/PurchaseReturnReport";
 import ExpenseReport from "./pages/reports/ExpenseReport";
 import ExpenseDetailedReport from "./pages/reports/ExpenseDetailedReport";
 import DayBookReport from "./pages/reports/DayBookReport";
+import PLPeriodicCOGS from "./pages/reports/PLPeriodicCOGS";
+import PLPeriodicStock from "./pages/reports/PLPeriodicStock";
+import PLStockBased from "./pages/reports/PLStockBased";
+import PLByProduct from "./pages/reports/PLByProduct";
+import PLByInvoice from "./pages/reports/PLByInvoice";
+import PLByClient from "./pages/reports/PLByClient";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -219,12 +225,12 @@ const App = () => (
                 <Route path="/reports/purchase-orders" element={<Guard f="reports/purchase-orders"><PurchaseOrderReport /></Guard>} />
                 <Route path="/reports/purchases-detailed" element={<Guard f="reports/purchases-detailed"><PurchaseDetailedReport /></Guard>} />
                 <Route path="/reports/purchase-returns" element={<Guard f="reports/purchase-returns"><PurchaseReturnReport /></Guard>} />
-                <Route path="/reports/pl-cogs-period" element={<Guard f="reports/pl-cogs-period"><ComingSoon title="P&L Periodic (COGS)" /></Guard>} />
-                <Route path="/reports/pl-stock-period" element={<Guard f="reports/pl-stock-period"><ComingSoon title="P&L Periodic (Stock)" /></Guard>} />
-                <Route path="/reports/pl-stock" element={<Guard f="reports/pl-stock"><ComingSoon title="P&L Using Opening/Closing Stock" /></Guard>} />
-                <Route path="/reports/pl-product" element={<Guard f="reports/pl-product"><ComingSoon title="Product wise Profit/Loss" /></Guard>} />
-                <Route path="/reports/pl-invoice" element={<Guard f="reports/pl-invoice"><ComingSoon title="Invoice wise Profit/Loss" /></Guard>} />
-                <Route path="/reports/pl-client" element={<Guard f="reports/pl-client"><ComingSoon title="Client wise Profit/Loss" /></Guard>} />
+               <Route path="/reports/pl-cogs-period" element={<Guard f="reports/pl-cogs-period"><PLPeriodicCOGS /></Guard>} />
+               <Route path="/reports/pl-stock-period" element={<Guard f="reports/pl-stock-period"><PLPeriodicStock /></Guard>} />
+               <Route path="/reports/pl-stock" element={<Guard f="reports/pl-stock"><PLStockBased /></Guard>} />
+               <Route path="/reports/pl-product" element={<Guard f="reports/pl-product"><PLByProduct /></Guard>} />
+               <Route path="/reports/pl-invoice" element={<Guard f="reports/pl-invoice"><PLByInvoice /></Guard>} />
+               <Route path="/reports/pl-client" element={<Guard f="reports/pl-client"><PLByClient /></Guard>} />
                 <Route path="/reports/expense" element={<Guard f="reports/expense"><ExpenseReport /></Guard>} />
                 <Route path="/reports/expense-detailed" element={<Guard f="reports/expense-detailed"><ExpenseDetailedReport /></Guard>} />
                 <Route path="/reports/day-book" element={<Guard f="reports/day-book"><DayBookReport /></Guard>} />
