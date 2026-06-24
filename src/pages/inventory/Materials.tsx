@@ -17,6 +17,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { unitOptions } from '@/lib/units';
 
 interface Material {
   id: string;
@@ -79,14 +80,27 @@ export const Materials: React.FC = () => {
     e.preventDefault();
     if (!selectedCompany) return;
 
+    let finalCost = parseFloat(formData.cost_price) || 0;
+    let finalStock = parseFloat(formData.stock_quantity) || 0;
+    // Weighted-average price when editing and old stock exists with a price change
+    if (editingMaterial && editingMaterial.stock_quantity > 0 && finalCost !== editingMaterial.cost_price) {
+      const oldStock = editingMaterial.stock_quantity;
+      const oldCost = editingMaterial.cost_price;
+      const addStock = finalStock; // treat stok form as penambahan
+      const totalStock = oldStock + addStock;
+      finalCost = totalStock > 0
+        ? ((oldStock * oldCost) + (addStock * finalCost)) / totalStock
+        : finalCost;
+      finalStock = totalStock;
+    }
     const materialData = {
       sku: formData.sku,
       name: formData.name,
       product_type: 'raw_material' as const,
       unit: formData.unit,
       unit_price: 0,
-      cost_price: parseFloat(formData.cost_price) || 0,
-      stock_quantity: parseFloat(formData.stock_quantity) || 0,
+      cost_price: finalCost,
+      stock_quantity: finalStock,
       cogs_account_id: formData.cogs_account_id || null,
     };
 
@@ -234,12 +248,11 @@ export const Materials: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Satuan</label>
-                  <Input
+                  <SearchableSelect
+                    options={unitOptions()}
                     value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    placeholder="pcs"
-                    className="input-field"
-                    required
+                    onChange={(value) => setFormData({ ...formData, unit: value })}
+                    placeholder="Pilih satuan"
                   />
                 </div>
                 <div>
@@ -251,6 +264,11 @@ export const Materials: React.FC = () => {
                     placeholder="0"
                     className="input-field"
                   />
+                  {editingMaterial && editingMaterial.stock_quantity > 0 && parseFloat(formData.cost_price || '0') !== editingMaterial.cost_price && (
+                    <p className="text-xs text-warning mt-1">
+                      Avg dengan harga lama: {formatCurrency(((editingMaterial.stock_quantity * editingMaterial.cost_price) + (parseFloat(formData.stock_quantity || '0') * parseFloat(formData.cost_price || '0'))) / Math.max(1, editingMaterial.stock_quantity + parseFloat(formData.stock_quantity || '0')))}
+                    </p>
+                  )}
                 </div>
               </div>
               <div>

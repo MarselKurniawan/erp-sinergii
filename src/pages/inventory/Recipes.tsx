@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Plus, Trash2, Edit, FlaskConical, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { unitOptions, smallestUnitOf, findUnit } from '@/lib/units';
 
 interface RecipeItem {
   id?: string;
@@ -296,6 +297,16 @@ export default function Recipes() {
     label: `${p.sku} - ${p.name}`
   }));
 
+  // Pick smallest unit of the selected material so quantities are in atomic units (e.g. kg -> g)
+  const handleMaterialChange = (index: number, productId: string) => {
+    const mat = rawMaterials.find(p => p.id === productId);
+    const matUnit = mat?.unit || 'pcs';
+    const smallest = smallestUnitOf(matUnit);
+    const updated = [...recipeItems];
+    updated[index] = { ...updated[index], product_id: productId, unit: smallest };
+    setRecipeItems(updated);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -364,10 +375,11 @@ export default function Recipes() {
                 </div>
                 <div className="space-y-2">
                   <Label>Satuan</Label>
-                  <Input
+                  <SearchableSelect
+                    options={unitOptions()}
                     value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    placeholder="pcs"
+                    onChange={(value) => setFormData({ ...formData, unit: value })}
+                    placeholder="Pilih satuan"
                   />
                 </div>
               </div>
@@ -413,7 +425,7 @@ export default function Recipes() {
                               <SearchableSelect
                                 options={materialOptions}
                                 value={item.product_id}
-                                onChange={(value) => updateRecipeItem(index, 'product_id', value)}
+                                onChange={(value) => handleMaterialChange(index, value)}
                                 placeholder="Pilih material"
                               />
                             </TableCell>
@@ -427,10 +439,16 @@ export default function Recipes() {
                               />
                             </TableCell>
                             <TableCell>
-                              <Input
+                              <SearchableSelect
+                                options={(() => {
+                                  const mat = rawMaterials.find(p => p.id === item.product_id);
+                                  const grp = findUnit(mat?.unit || '')?.group;
+                                  const opts = unitOptions().filter(o => !grp || findUnit(o.value)?.group === grp);
+                                  return opts.length ? opts : unitOptions();
+                                })()}
                                 value={item.unit}
-                                onChange={(e) => updateRecipeItem(index, 'unit', e.target.value)}
-                                placeholder="pcs"
+                                onChange={(value) => updateRecipeItem(index, 'unit', value)}
+                                placeholder="Satuan"
                               />
                             </TableCell>
                             <TableCell>
