@@ -80,14 +80,27 @@ export const Materials: React.FC = () => {
     e.preventDefault();
     if (!selectedCompany) return;
 
+    let finalCost = parseFloat(formData.cost_price) || 0;
+    let finalStock = parseFloat(formData.stock_quantity) || 0;
+    // Weighted-average price when editing and old stock exists with a price change
+    if (editingMaterial && editingMaterial.stock_quantity > 0 && finalCost !== editingMaterial.cost_price) {
+      const oldStock = editingMaterial.stock_quantity;
+      const oldCost = editingMaterial.cost_price;
+      const addStock = finalStock; // treat stok form as penambahan
+      const totalStock = oldStock + addStock;
+      finalCost = totalStock > 0
+        ? ((oldStock * oldCost) + (addStock * finalCost)) / totalStock
+        : finalCost;
+      finalStock = totalStock;
+    }
     const materialData = {
       sku: formData.sku,
       name: formData.name,
       product_type: 'raw_material' as const,
       unit: formData.unit,
       unit_price: 0,
-      cost_price: parseFloat(formData.cost_price) || 0,
-      stock_quantity: parseFloat(formData.stock_quantity) || 0,
+      cost_price: finalCost,
+      stock_quantity: finalStock,
       cogs_account_id: formData.cogs_account_id || null,
     };
 
