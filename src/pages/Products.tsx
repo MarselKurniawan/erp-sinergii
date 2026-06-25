@@ -188,8 +188,11 @@ export const Products: React.FC = () => {
     e.preventDefault();
     if (!selectedCompany) return;
 
+    const { generateCode } = await import("@/lib/autoCode");
+    const sku = formData.sku?.trim() || (await generateCode(selectedCompany.id, "PRD"));
+
     const productData = {
-      sku: formData.sku,
+      sku,
       name: formData.name,
       product_type: formData.product_type,
       category_id: formData.category_id || null,
@@ -563,13 +566,12 @@ export const Products: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="form-label">SKU</label>
+                    <label className="form-label">SKU <span className="text-xs text-muted-foreground">(otomatis jika kosong)</span></label>
                     <Input
                       value={formData.sku}
                       onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                      placeholder="e.g., PRD-001"
+                      placeholder="Otomatis: PRD-YYYYMM-XXXX"
                       className="input-field"
-                      required
                     />
                   </div>
                   <div>

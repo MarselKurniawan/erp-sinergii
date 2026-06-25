@@ -50,7 +50,9 @@ export const Suppliers: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCompany) return;
-    const supplierData = { code: formData.code, name: formData.name, email: formData.email || null, phone: formData.phone || null, address: formData.address || null, payable_account_id: formData.payable_account_id || null };
+    const { generateCode } = await import('@/lib/autoCode');
+    const code = formData.code?.trim() || (await generateCode(selectedCompany.id, 'SUP'));
+    const supplierData = { code, name: formData.name, email: formData.email || null, phone: formData.phone || null, address: formData.address || null, payable_account_id: formData.payable_account_id || null };
     
     if (editingSupplier) {
       const { error } = await supabase.from('suppliers').update(supplierData).eq('id', editingSupplier.id);
@@ -101,7 +103,7 @@ export const Suppliers: React.FC = () => {
             <DialogHeader><DialogTitle>{editingSupplier ? 'Edit Supplier' : 'Create New Supplier'}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="form-label">Supplier Code</label><Input value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} placeholder="SUP-001" className="input-field" required /></div>
+                <div><label className="form-label">Supplier Code <span className="text-xs text-muted-foreground">(otomatis jika kosong)</span></label><Input value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} placeholder="Otomatis: SUP-YYYYMM-XXXX" className="input-field" /></div>
                 <div><label className="form-label">Name</label><Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Supplier name" className="input-field" required /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">

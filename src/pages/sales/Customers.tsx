@@ -94,8 +94,11 @@ export const Customers: React.FC = () => {
     e.preventDefault();
     if (!selectedCompany) return;
 
+    const { generateCode } = await import('@/lib/autoCode');
+    const code = formData.code?.trim() || (await generateCode(selectedCompany.id, 'CUST'));
+
     const customerData = {
-      code: formData.code,
+      code,
       name: formData.name,
       email: formData.email || null,
       phone: formData.phone || null,
@@ -205,13 +208,12 @@ export const Customers: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="form-label">Customer Code</label>
+                  <label className="form-label">Customer Code <span className="text-xs text-muted-foreground">(otomatis jika kosong)</span></label>
                   <Input
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    placeholder="e.g., CUST-001"
+                    placeholder="Otomatis: CUST-YYYYMM-XXXX"
                     className="input-field"
-                    required
                   />
                 </div>
                 <div>
