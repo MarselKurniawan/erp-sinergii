@@ -94,8 +94,11 @@ export const Customers: React.FC = () => {
     e.preventDefault();
     if (!selectedCompany) return;
 
+    const { generateCode } = await import('@/lib/autoCode');
+    const code = formData.code?.trim() || (await generateCode(selectedCompany.id, 'CUST'));
+
     const customerData = {
-      code: formData.code,
+      code,
       name: formData.name,
       email: formData.email || null,
       phone: formData.phone || null,
