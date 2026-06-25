@@ -134,8 +134,8 @@ const MappingTable = <T extends Record<string, any>>({
 };
 
 export default function AccountMapping() {
-  const { currentCompany } = useCompany();
-  const companyId = currentCompany?.id || "";
+  const { selectedCompany } = useCompany();
+  const companyId = selectedCompany?.id || "";
   const accounts = useAccounts(companyId);
 
   if (!companyId) {
