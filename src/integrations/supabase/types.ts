@@ -989,6 +989,54 @@ export type Database = {
           },
         ]
       }
+      expense_categories: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          expense_account_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          expense_account_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          expense_account_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_categories_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_categories_expense_account_id_fkey"
+            columns: ["expense_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -996,6 +1044,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           expense_account_id: string
+          expense_category_id: string | null
           expense_date: string
           expense_number: string
           id: string
@@ -1018,6 +1067,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expense_account_id: string
+          expense_category_id?: string | null
           expense_date?: string
           expense_number: string
           id?: string
@@ -1040,6 +1090,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expense_account_id?: string
+          expense_category_id?: string | null
           expense_date?: string
           expense_number?: string
           id?: string
@@ -1069,6 +1120,13 @@ export type Database = {
             columns: ["expense_account_id"]
             isOneToOne: false
             referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_expense_category_id_fkey"
+            columns: ["expense_category_id"]
+            isOneToOne: false
+            referencedRelation: "expense_categories"
             referencedColumns: ["id"]
           },
           {
@@ -3713,6 +3771,100 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          doc_type: string
+          due_days: number
+          end_date: string | null
+          frequency: string
+          id: string
+          interval_count: number
+          is_active: boolean
+          items: Json
+          last_generated_id: string | null
+          last_run_at: string | null
+          name: string
+          next_run: string
+          notes: string | null
+          start_date: string
+          supplier_id: string | null
+          total_generated: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          doc_type: string
+          due_days?: number
+          end_date?: string | null
+          frequency: string
+          id?: string
+          interval_count?: number
+          is_active?: boolean
+          items?: Json
+          last_generated_id?: string | null
+          last_run_at?: string | null
+          name: string
+          next_run: string
+          notes?: string | null
+          start_date: string
+          supplier_id?: string | null
+          total_generated?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          doc_type?: string
+          due_days?: number
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          interval_count?: number
+          is_active?: boolean
+          items?: Json
+          last_generated_id?: string | null
+          last_run_at?: string | null
+          name?: string
+          next_run?: string
+          notes?: string | null
+          start_date?: string
+          supplier_id?: string | null
+          total_generated?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_templates_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_templates_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_order_items: {
         Row: {
           created_at: string
@@ -4530,6 +4682,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _advance_next_run: {
+        Args: { p_date: string; p_freq: string; p_interval: number }
+        Returns: string
+      }
       _record_inventory_movement: {
         Args: {
           p_company_id: string
@@ -4589,6 +4745,10 @@ export type Database = {
         Returns: string
       }
       generate_notifications: { Args: never; Returns: number }
+      generate_recurring_documents: {
+        Args: { p_as_of?: string; p_company_id?: string }
+        Returns: number
+      }
       has_permission: {
         Args: { _action: string; _feature_key: string; _user_id: string }
         Returns: boolean
