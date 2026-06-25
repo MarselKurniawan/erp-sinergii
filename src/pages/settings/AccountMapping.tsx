@@ -118,7 +118,7 @@ const MappingTable = <T extends Record<string, any>>({
                   <TableCell key={c.key} className="min-w-[220px]">
                     <SearchableSelect
                       value={(r as any)[c.key] || ""}
-                      onValueChange={(v) => setVal(r.id, c.key, v || null)}
+                      onChange={(v) => setVal(r.id, c.key, v || null)}
                       options={accountOptions(accounts, c.types)}
                       placeholder="— pilih akun —"
                     />
