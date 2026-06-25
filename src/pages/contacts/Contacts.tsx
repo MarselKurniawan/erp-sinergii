@@ -48,7 +48,12 @@ const Contacts: React.FC = () => {
   const handleSubmit = async () => {
     if (!selectedCompany || !form.name) { toast.error('Nama wajib'); return; }
     const table = tab === 'customer' ? 'customers' : 'suppliers';
-    const payload: any = { ...form, company_id: selectedCompany.id };
+    let code = form.code?.trim();
+    if (!code && !editingId) {
+      const { generateCode } = await import('@/lib/autoCode');
+      code = await generateCode(selectedCompany.id, tab === 'customer' ? 'CUST' : 'SUP');
+    }
+    const payload: any = { ...form, code, company_id: selectedCompany.id };
     const { error } = editingId
       ? await supabase.from(table).update(payload).eq('id', editingId)
       : await supabase.from(table).insert(payload);
@@ -113,7 +118,7 @@ const Contacts: React.FC = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingId ? 'Edit' : 'Tambah'} {tab === 'customer' ? 'Customer' : 'Supplier'}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3">
-            <div><Label>Kode</Label><Input value={form.code || ''} onChange={(e) => setForm({ ...form, code: e.target.value })} /></div>
+            <div><Label>Kode <span className="text-xs text-muted-foreground">(otomatis kosongkan)</span></Label><Input value={form.code || ''} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="Otomatis" /></div>
             <div><Label>Nama *</Label><Input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div><Label>Email</Label><Input value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
             <div><Label>Telepon</Label><Input value={form.phone || ''} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
