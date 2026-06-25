@@ -117,6 +117,7 @@ import PaymentTracking from "./pages/settings/PaymentTracking";
 import BankingDetails from "./pages/settings/BankingDetails";
 import DocumentFields from "./pages/settings/DocumentFields";
 import NumberingSettings from "./pages/settings/NumberingSettings";
+import AccountMapping from "./pages/settings/AccountMapping";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -259,6 +260,7 @@ const App = () => (
                 <Route path="/settings/banking" element={<BankingDetails />} />
                 <Route path="/settings/document-fields" element={<DocumentFields />} />
                 <Route path="/settings/numbering" element={<NumberingSettings />} />
+                <Route path="/settings/account-mapping" element={<AccountMapping />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

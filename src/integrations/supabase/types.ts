@@ -658,6 +658,7 @@ export type Database = {
           name: string
           phone: string | null
           receivable_account_id: string | null
+          tax_account_id: string | null
           updated_at: string
         }
         Insert: {
@@ -671,6 +672,7 @@ export type Database = {
           name: string
           phone?: string | null
           receivable_account_id?: string | null
+          tax_account_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -684,6 +686,7 @@ export type Database = {
           name?: string
           phone?: string | null
           receivable_account_id?: string | null
+          tax_account_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -697,6 +700,13 @@ export type Database = {
           {
             foreignKeyName: "customers_receivable_account_id_fkey"
             columns: ["receivable_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_tax_account_id_fkey"
+            columns: ["tax_account_id"]
             isOneToOne: false
             referencedRelation: "chart_of_accounts"
             referencedColumns: ["id"]
@@ -2972,12 +2982,14 @@ export type Database = {
           cost_price: number
           created_at: string
           id: string
+          inventory_account_id: string | null
           is_active: boolean | null
           name: string
           product_type: Database["public"]["Enums"]["product_type"]
           revenue_account_id: string | null
           sku: string
           stock_quantity: number | null
+          tax_account_id: string | null
           unit: string
           unit_price: number
           updated_at: string
@@ -2989,12 +3001,14 @@ export type Database = {
           cost_price?: number
           created_at?: string
           id?: string
+          inventory_account_id?: string | null
           is_active?: boolean | null
           name: string
           product_type?: Database["public"]["Enums"]["product_type"]
           revenue_account_id?: string | null
           sku: string
           stock_quantity?: number | null
+          tax_account_id?: string | null
           unit?: string
           unit_price?: number
           updated_at?: string
@@ -3006,12 +3020,14 @@ export type Database = {
           cost_price?: number
           created_at?: string
           id?: string
+          inventory_account_id?: string | null
           is_active?: boolean | null
           name?: string
           product_type?: Database["public"]["Enums"]["product_type"]
           revenue_account_id?: string | null
           sku?: string
           stock_quantity?: number | null
+          tax_account_id?: string | null
           unit?: string
           unit_price?: number
           updated_at?: string
@@ -3039,8 +3055,22 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "products_inventory_account_id_fkey"
+            columns: ["inventory_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "products_revenue_account_id_fkey"
             columns: ["revenue_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_tax_account_id_fkey"
+            columns: ["tax_account_id"]
             isOneToOne: false
             referencedRelation: "chart_of_accounts"
             referencedColumns: ["id"]
@@ -4202,10 +4232,12 @@ export type Database = {
           company_id: string
           created_at: string
           email: string | null
+          expense_account_id: string | null
           id: string
           name: string
           payable_account_id: string | null
           phone: string | null
+          tax_account_id: string | null
           updated_at: string
         }
         Insert: {
@@ -4214,10 +4246,12 @@ export type Database = {
           company_id: string
           created_at?: string
           email?: string | null
+          expense_account_id?: string | null
           id?: string
           name: string
           payable_account_id?: string | null
           phone?: string | null
+          tax_account_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -4226,10 +4260,12 @@ export type Database = {
           company_id?: string
           created_at?: string
           email?: string | null
+          expense_account_id?: string | null
           id?: string
           name?: string
           payable_account_id?: string | null
           phone?: string | null
+          tax_account_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -4241,8 +4277,22 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "suppliers_expense_account_id_fkey"
+            columns: ["expense_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "suppliers_payable_account_id_fkey"
             columns: ["payable_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suppliers_tax_account_id_fkey"
+            columns: ["tax_account_id"]
             isOneToOne: false
             referencedRelation: "chart_of_accounts"
             referencedColumns: ["id"]
