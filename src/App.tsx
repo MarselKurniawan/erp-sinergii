@@ -263,6 +263,8 @@ const App = () => (
                 <Route path="/settings/document-fields" element={<DocumentFields />} />
                 <Route path="/settings/numbering" element={<NumberingSettings />} />
                 <Route path="/settings/account-mapping" element={<AccountMapping />} />
+                <Route path="/expenses/categories" element={<ExpenseCategories />} />
+                <Route path="/recurring" element={<RecurringTemplates />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
