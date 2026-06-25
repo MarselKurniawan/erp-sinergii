@@ -44,7 +44,7 @@ export default function SystemHealthCheck() {
     });
 
     // 2. Key account types
-    const required = [
+    const required: { type: "asset" | "liability" | "revenue" | "expense" | "cash_bank"; kw: string; label: string }[] = [
       { type: "asset", kw: "piutang", label: "Piutang Usaha" },
       { type: "liability", kw: "hutang", label: "Hutang Usaha" },
       { type: "revenue", kw: "penjualan", label: "Pendapatan Penjualan" },
