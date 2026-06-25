@@ -709,8 +709,10 @@ export type Database = {
           created_at: string
           current_number: number
           document_type: string
+          format: string
           id: string
           last_reset_date: string
+          pad_length: number
           prefix: string
           reset_period: string
           updated_at: string
@@ -720,8 +722,10 @@ export type Database = {
           created_at?: string
           current_number?: number
           document_type: string
+          format?: string
           id?: string
           last_reset_date?: string
+          pad_length?: number
           prefix: string
           reset_period?: string
           updated_at?: string
@@ -731,8 +735,10 @@ export type Database = {
           created_at?: string
           current_number?: number
           document_type?: string
+          format?: string
           id?: string
           last_reset_date?: string
+          pad_length?: number
           prefix?: string
           reset_period?: string
           updated_at?: string
@@ -1521,6 +1527,8 @@ export type Database = {
           is_posted: boolean | null
           reference_id: string | null
           reference_type: string | null
+          source_id: string | null
+          source_type: string | null
           void_reason: string | null
           voided_at: string | null
           voided_by: string | null
@@ -1536,6 +1544,8 @@ export type Database = {
           is_posted?: boolean | null
           reference_id?: string | null
           reference_type?: string | null
+          source_id?: string | null
+          source_type?: string | null
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
@@ -1551,6 +1561,8 @@ export type Database = {
           is_posted?: boolean | null
           reference_id?: string | null
           reference_type?: string | null
+          source_id?: string | null
+          source_type?: string | null
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
@@ -4516,6 +4528,10 @@ export type Database = {
           p_quantities?: Json
           p_sales_order_id: string
         }
+        Returns: string
+      }
+      find_account: {
+        Args: { p_company_id: string; p_name_like?: string; p_type: string }
         Returns: string
       }
       generate_document_number: {
