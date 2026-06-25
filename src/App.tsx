@@ -120,6 +120,7 @@ import NumberingSettings from "./pages/settings/NumberingSettings";
 import AccountMapping from "./pages/settings/AccountMapping";
 import ExpenseCategories from "./pages/expenses/ExpenseCategories";
 import RecurringTemplates from "./pages/recurring/RecurringTemplates";
+import SystemHealthCheck from "./pages/settings/SystemHealthCheck";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -265,6 +266,7 @@ const App = () => (
                 <Route path="/settings/account-mapping" element={<AccountMapping />} />
                 <Route path="/expenses/categories" element={<ExpenseCategories />} />
                 <Route path="/recurring" element={<RecurringTemplates />} />
+                <Route path="/settings/health-check" element={<SystemHealthCheck />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
