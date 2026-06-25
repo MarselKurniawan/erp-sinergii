@@ -105,6 +105,17 @@ import PLStockBased from "./pages/reports/PLStockBased";
 import PLByProduct from "./pages/reports/PLByProduct";
 import PLByInvoice from "./pages/reports/PLByInvoice";
 import PLByClient from "./pages/reports/PLByClient";
+import DiscountTax from "./pages/settings/DiscountTax";
+import TermsConditions from "./pages/settings/TermsConditions";
+import InvoiceTheme from "./pages/settings/InvoiceTheme";
+import BalanceSheetSetting from "./pages/settings/BalanceSheetSetting";
+import CustomizeDashboard from "./pages/settings/CustomizeDashboard";
+import EnableFeatures from "./pages/settings/EnableFeatures";
+import ShowHideFields from "./pages/settings/ShowHideFields";
+import InventorySetting from "./pages/settings/InventorySetting";
+import PaymentTracking from "./pages/settings/PaymentTracking";
+import BankingDetails from "./pages/settings/BankingDetails";
+import DocumentFields from "./pages/settings/DocumentFields";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
@@ -235,17 +246,17 @@ const App = () => (
                 <Route path="/reports/expense-detailed" element={<Guard f="reports/expense-detailed"><ExpenseDetailedReport /></Guard>} />
                 <Route path="/reports/day-book" element={<Guard f="reports/day-book"><DayBookReport /></Guard>} />
                 {/* Settings - new */}
-                <Route path="/settings/discount-tax" element={<ComingSoon title="Discount and Taxes" />} />
-                <Route path="/settings/terms" element={<ComingSoon title="Terms and Conditions" />} />
-                <Route path="/settings/invoice-theme" element={<ComingSoon title="Invoice Theme" />} />
-                <Route path="/settings/balance-sheet" element={<ComingSoon title="Balance Sheet Setting" />} />
-                <Route path="/settings/dashboard" element={<ComingSoon title="Customize Dashboard" />} />
-                <Route path="/settings/features" element={<ComingSoon title="Enable / Disable Feature" />} />
-                <Route path="/settings/fields" element={<ComingSoon title="Show/Hide Fields" />} />
-                <Route path="/settings/inventory" element={<ComingSoon title="Inventory Setting" />} />
-                <Route path="/settings/payment-tracking" element={<ComingSoon title="Payment Tracking" />} />
-                <Route path="/settings/banking" element={<ComingSoon title="Banking Details & PayPal.Me" />} />
-                <Route path="/settings/document-fields" element={<ComingSoon title="Manage Fields in Documents" />} />
+                <Route path="/settings/discount-tax" element={<DiscountTax />} />
+                <Route path="/settings/terms" element={<TermsConditions />} />
+                <Route path="/settings/invoice-theme" element={<InvoiceTheme />} />
+                <Route path="/settings/balance-sheet" element={<BalanceSheetSetting />} />
+                <Route path="/settings/dashboard" element={<CustomizeDashboard />} />
+                <Route path="/settings/features" element={<EnableFeatures />} />
+                <Route path="/settings/fields" element={<ShowHideFields />} />
+                <Route path="/settings/inventory" element={<InventorySetting />} />
+                <Route path="/settings/payment-tracking" element={<PaymentTracking />} />
+                <Route path="/settings/banking" element={<BankingDetails />} />
+                <Route path="/settings/document-fields" element={<DocumentFields />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
