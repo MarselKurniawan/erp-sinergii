@@ -260,6 +260,7 @@ const App = () => (
                 <Route path="/settings/banking" element={<BankingDetails />} />
                 <Route path="/settings/document-fields" element={<DocumentFields />} />
                 <Route path="/settings/numbering" element={<NumberingSettings />} />
+                <Route path="/settings/account-mapping" element={<AccountMapping />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
