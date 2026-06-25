@@ -117,6 +117,7 @@ import PaymentTracking from "./pages/settings/PaymentTracking";
 import BankingDetails from "./pages/settings/BankingDetails";
 import DocumentFields from "./pages/settings/DocumentFields";
 import NumberingSettings from "./pages/settings/NumberingSettings";
+import AccountMapping from "./pages/settings/AccountMapping";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
