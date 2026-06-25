@@ -118,6 +118,8 @@ import BankingDetails from "./pages/settings/BankingDetails";
 import DocumentFields from "./pages/settings/DocumentFields";
 import NumberingSettings from "./pages/settings/NumberingSettings";
 import AccountMapping from "./pages/settings/AccountMapping";
+import ExpenseCategories from "./pages/expenses/ExpenseCategories";
+import RecurringTemplates from "./pages/recurring/RecurringTemplates";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
   <RequireFeature feature={f}>{children}</RequireFeature>
