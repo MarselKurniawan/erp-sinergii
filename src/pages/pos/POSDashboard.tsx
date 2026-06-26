@@ -417,24 +417,22 @@ const POSDashboard = () => {
       .eq('open_table_id', tableId);
 
     const newCart: CartItem[] = (items || []).map((it: any) => {
-      const taxRate = getProductTaxRate({
-        id: it.product_id,
-        product_tax_rates: [],
-      } as any);
+      const prod = products.find((p: any) => p.id === it.product_id) as any;
+      const taxRate = prod ? getProductTaxRate(prod) : (it.tax_percent || 0);
       const newItem: CartItem = {
         product_id: it.product_id,
-        name: it.products?.name || '-',
-        sku: it.products?.sku || '',
+        name: it.products?.name || prod?.name || '-',
+        sku: it.products?.sku || prod?.sku || '',
         quantity: it.quantity,
         unit_price: it.unit_price,
-        cost_price: it.cost_price || 0,
+        cost_price: it.cost_price || prod?.cost_price || 0,
         discount_percent: it.discount_percent || 0,
-        tax_percent: it.tax_percent || taxRate || 0,
+        tax_percent: taxRate,
         discount_amount: 0,
         tax_amount: 0,
         total: it.unit_price * it.quantity,
-        category_id: it.products?.category_id || null,
-        category_name: it.products?.category?.name || null,
+        category_id: it.products?.category_id || prod?.category_id || null,
+        category_name: it.products?.category?.name || prod?.category?.name || null,
       };
       recalculateItem(newItem);
       return newItem;
