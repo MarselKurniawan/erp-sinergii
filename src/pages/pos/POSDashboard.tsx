@@ -897,6 +897,15 @@ const POSDashboard = () => {
         promoDiscount: promoDiscount
       });
 
+      // Close linked open table after successful payment
+      if (activeOpenTableId) {
+        await supabase
+          .from('pos_open_tables')
+          .update({ status: 'closed', closed_at: new Date().toISOString() })
+          .eq('id', activeOpenTableId);
+        clearActiveOpenTable();
+      }
+
       toast.success(`Transaksi ${transactionNumber} berhasil`);
       setCart([]);
       setPayments([]);
