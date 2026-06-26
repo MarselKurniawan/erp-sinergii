@@ -712,6 +712,7 @@ const POSDashboard = () => {
           amount_paid: totalPaid,
           change_amount: changeAmount,
           status: 'completed',
+          open_table_id: activeOpenTableId,
           created_by: user?.id
         })
         .select()
