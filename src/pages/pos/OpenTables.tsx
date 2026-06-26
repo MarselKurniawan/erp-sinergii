@@ -131,107 +131,10 @@ const OpenTables = () => {
     setShowItemsDialog(true);
   };
 
-  const addItemToTable = async (product: any) => {
-    if (!selectedTable) return;
-
-    // Check if item already exists
-    const existingItem = tableItems.find(i => i.product_id === product.id);
-    
-    if (existingItem) {
-      // Update quantity
-      const newQty = existingItem.quantity + 1;
-      const total = newQty * existingItem.unit_price;
-      
-      await supabase
-        .from('pos_open_table_items')
-        .update({ quantity: newQty, total })
-        .eq('id', existingItem.id);
-    } else {
-      // Add new item
-      await supabase
-        .from('pos_open_table_items')
-        .insert({
-          open_table_id: selectedTable.id,
-          product_id: product.id,
-          quantity: 1,
-          unit_price: product.unit_price,
-          cost_price: product.cost_price,
-          total: product.unit_price
-        });
-    }
-
-    await fetchTableItems(selectedTable.id);
-    await updateTableTotals(selectedTable.id);
-    toast.success(`${product.name} ditambahkan`);
-  };
-
-  const removeItemFromTable = async (itemId: string) => {
-    if (!selectedTable) return;
-
-    await supabase
-      .from('pos_open_table_items')
-      .delete()
-      .eq('id', itemId);
-
-    await fetchTableItems(selectedTable.id);
-    await updateTableTotals(selectedTable.id);
-    toast.success('Item dihapus');
-  };
-
-  const updateItemQuantity = async (itemId: string, delta: number) => {
-    const item = tableItems.find(i => i.id === itemId);
-    if (!item || !selectedTable) return;
-
-    const newQty = Math.max(1, item.quantity + delta);
-    const total = newQty * item.unit_price;
-
-    await supabase
-      .from('pos_open_table_items')
-      .update({ quantity: newQty, total })
-      .eq('id', itemId);
-
-    await fetchTableItems(selectedTable.id);
-    await updateTableTotals(selectedTable.id);
-  };
-
-  const updateTableTotals = async (tableId: string) => {
-    const { data: items } = await supabase
-      .from('pos_open_table_items')
-      .select('total, cost_price, quantity')
-      .eq('open_table_id', tableId);
-
-    const subtotal = items?.reduce((sum, i) => sum + (i.total || 0), 0) || 0;
-    const totalCogs = items?.reduce((sum, i) => sum + ((i.cost_price || 0) * (i.quantity || 0)), 0) || 0;
-
-    await supabase
-      .from('pos_open_tables')
-      .update({
-        subtotal,
-        total_amount: subtotal,
-        total_cogs: totalCogs
-      })
-      .eq('id', tableId);
-
-    fetchOpenTables();
-  };
-
-  const closeTable = async (table: OpenTable) => {
-    if (!confirm(`Tutup meja ${table.table_name}? Pastikan sudah dibayar melalui POS.`)) return;
-
-    await supabase
-      .from('pos_open_tables')
-      .update({ status: 'closed', closed_at: new Date().toISOString() })
-      .eq('id', table.id);
-
-    toast.success('Meja ditutup');
-    fetchOpenTables();
+  const openInPOS = (table: OpenTable) => {
     setShowItemsDialog(false);
+    navigate(`/pos?openTableId=${table.id}`);
   };
-
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const tableTotal = tableItems.reduce((sum, i) => sum + i.total, 0);
 
