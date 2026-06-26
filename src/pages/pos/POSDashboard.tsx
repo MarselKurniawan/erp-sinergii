@@ -1716,6 +1716,41 @@ const POSDashboard = () => {
   function renderDialogs() {
     return (
       <>
+        {/* Open Table Picker */}
+        <Dialog open={showOpenTablePicker} onOpenChange={setShowOpenTablePicker}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Pilih Meja</DialogTitle>
+            </DialogHeader>
+            {openTablesList.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-10 w-10 mx-auto mb-2" />
+                <p>Tidak ada meja yang sedang buka</p>
+                <p className="text-xs mt-1">Buka meja baru lewat menu Open Table.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {openTablesList.map(t => (
+                  <Button
+                    key={t.id}
+                    variant="outline"
+                    className="h-auto py-3 flex flex-col items-start text-left"
+                    onClick={() => loadOpenTableIntoCart(t.id)}
+                  >
+                    <span className="font-semibold">{t.table_name}</span>
+                    {t.customer_name && (
+                      <span className="text-xs text-muted-foreground">{t.customer_name}</span>
+                    )}
+                    <span className="text-primary text-sm font-medium mt-1">
+                      {formatCurrency(t.total_amount || 0)}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Open Session Dialog */}
         <Dialog open={showOpenSessionDialog} onOpenChange={setShowOpenSessionDialog}>
           <DialogContent>
