@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, ShoppingCart, Check, X, Users } from 'lucide-react';
+import { Plus, ShoppingCart, Users, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { format } from 'date-fns';
@@ -48,23 +48,19 @@ interface TableItem {
 const OpenTables = () => {
   const { selectedCompany } = useCompany();
   const { user } = useAuth();
-  const { products } = useProducts();
-  
+  const navigate = useNavigate();
+
   const [openTables, setOpenTables] = useState<OpenTable[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showItemsDialog, setShowItemsDialog] = useState(false);
   const [selectedTable, setSelectedTable] = useState<OpenTable | null>(null);
   const [tableItems, setTableItems] = useState<TableItem[]>([]);
-  
+
   // New table form
   const [newTableName, setNewTableName] = useState('');
   const [newCustomerName, setNewCustomerName] = useState('');
   const [newCustomerPhone, setNewCustomerPhone] = useState('');
-  
-  // Add item form
-  const [showAddItemDialog, setShowAddItemDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchOpenTables = async () => {
     if (!selectedCompany) return;
@@ -135,107 +131,10 @@ const OpenTables = () => {
     setShowItemsDialog(true);
   };
 
-  const addItemToTable = async (product: any) => {
-    if (!selectedTable) return;
-
-    // Check if item already exists
-    const existingItem = tableItems.find(i => i.product_id === product.id);
-    
-    if (existingItem) {
-      // Update quantity
-      const newQty = existingItem.quantity + 1;
-      const total = newQty * existingItem.unit_price;
-      
-      await supabase
-        .from('pos_open_table_items')
-        .update({ quantity: newQty, total })
-        .eq('id', existingItem.id);
-    } else {
-      // Add new item
-      await supabase
-        .from('pos_open_table_items')
-        .insert({
-          open_table_id: selectedTable.id,
-          product_id: product.id,
-          quantity: 1,
-          unit_price: product.unit_price,
-          cost_price: product.cost_price,
-          total: product.unit_price
-        });
-    }
-
-    await fetchTableItems(selectedTable.id);
-    await updateTableTotals(selectedTable.id);
-    toast.success(`${product.name} ditambahkan`);
-  };
-
-  const removeItemFromTable = async (itemId: string) => {
-    if (!selectedTable) return;
-
-    await supabase
-      .from('pos_open_table_items')
-      .delete()
-      .eq('id', itemId);
-
-    await fetchTableItems(selectedTable.id);
-    await updateTableTotals(selectedTable.id);
-    toast.success('Item dihapus');
-  };
-
-  const updateItemQuantity = async (itemId: string, delta: number) => {
-    const item = tableItems.find(i => i.id === itemId);
-    if (!item || !selectedTable) return;
-
-    const newQty = Math.max(1, item.quantity + delta);
-    const total = newQty * item.unit_price;
-
-    await supabase
-      .from('pos_open_table_items')
-      .update({ quantity: newQty, total })
-      .eq('id', itemId);
-
-    await fetchTableItems(selectedTable.id);
-    await updateTableTotals(selectedTable.id);
-  };
-
-  const updateTableTotals = async (tableId: string) => {
-    const { data: items } = await supabase
-      .from('pos_open_table_items')
-      .select('total, cost_price, quantity')
-      .eq('open_table_id', tableId);
-
-    const subtotal = items?.reduce((sum, i) => sum + (i.total || 0), 0) || 0;
-    const totalCogs = items?.reduce((sum, i) => sum + ((i.cost_price || 0) * (i.quantity || 0)), 0) || 0;
-
-    await supabase
-      .from('pos_open_tables')
-      .update({
-        subtotal,
-        total_amount: subtotal,
-        total_cogs: totalCogs
-      })
-      .eq('id', tableId);
-
-    fetchOpenTables();
-  };
-
-  const closeTable = async (table: OpenTable) => {
-    if (!confirm(`Tutup meja ${table.table_name}? Pastikan sudah dibayar melalui POS.`)) return;
-
-    await supabase
-      .from('pos_open_tables')
-      .update({ status: 'closed', closed_at: new Date().toISOString() })
-      .eq('id', table.id);
-
-    toast.success('Meja ditutup');
-    fetchOpenTables();
+  const openInPOS = (table: OpenTable) => {
     setShowItemsDialog(false);
+    navigate(`/pos?openTableId=${table.id}`);
   };
-
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const tableTotal = tableItems.reduce((sum, i) => sum + i.total, 0);
 
@@ -354,15 +253,20 @@ const OpenTables = () => {
           </DialogHeader>
           
           <div className="space-y-4">
-            {/* Add Item Button */}
+            {/* CTA: items must be added via POS */}
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+              Penambahan item & pembayaran sekarang dilakukan langsung di POS.
+              Klik <strong>Buka di POS</strong> untuk lanjut. Meja akan otomatis ditutup setelah pembayaran selesai.
+            </div>
+
             <div className="flex gap-2">
-              <Button onClick={() => setShowAddItemDialog(true)} className="flex-1">
-                <Plus className="h-4 w-4 mr-2" />
-                Tambah Item
+              <Button onClick={() => selectedTable && openInPOS(selectedTable)} className="flex-1">
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Buka di POS
               </Button>
             </div>
 
-            {/* Items Table */}
+            {/* Items snapshot (read-only) */}
             {tableItems.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <ShoppingCart className="h-8 w-8 mx-auto mb-2" />
@@ -376,7 +280,6 @@ const OpenTables = () => {
                     <TableHead className="text-center">Qty</TableHead>
                     <TableHead className="text-right">Harga</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -388,31 +291,15 @@ const OpenTables = () => {
                           <p className="text-xs text-muted-foreground">{item.products?.sku}</p>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-1">
-                          <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateItemQuantity(item.id, -1)}>
-                            -
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateItemQuantity(item.id, 1)}>
-                            +
-                          </Button>
-                        </div>
-                      </TableCell>
+                      <TableCell className="text-center">{item.quantity}</TableCell>
                       <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(item.total)}</TableCell>
-                      <TableCell>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => removeItemFromTable(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             )}
 
-            {/* Total */}
             <div className="border-t pt-4">
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
@@ -422,46 +309,12 @@ const OpenTables = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowItemsDialog(false)}>Tutup</Button>
-            <Button variant="destructive" onClick={() => selectedTable && closeTable(selectedTable)}>
-              <X className="h-4 w-4 mr-2" />
-              Tutup Meja
+            <Button variant="outline" onClick={() => setShowItemsDialog(false)}>Batal</Button>
+            <Button onClick={() => selectedTable && openInPOS(selectedTable)}>
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Lanjut Bayar di POS
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Item Dialog */}
-      <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Tambah Item ke {selectedTable?.table_name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Cari produk..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-96 overflow-y-auto">
-              {filteredProducts.map(product => (
-                <Button
-                  key={product.id}
-                  variant="outline"
-                  className="h-auto py-3 flex flex-col items-start text-left"
-                  onClick={() => {
-                    addItemToTable(product);
-                    setShowAddItemDialog(false);
-                    setSearchTerm('');
-                  }}
-                >
-                  <span className="font-medium text-sm truncate w-full">{product.name}</span>
-                  <span className="text-xs text-muted-foreground">{product.sku}</span>
-                  <span className="text-primary font-semibold">{formatCurrency(product.unit_price)}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

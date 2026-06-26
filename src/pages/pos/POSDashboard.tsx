@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -126,6 +128,13 @@ const POSDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Open table integration
+  const [activeOpenTableId, setActiveOpenTableId] = useState<string | null>(null);
+  const [activeOpenTableName, setActiveOpenTableName] = useState<string>('');
+  const [showOpenTablePicker, setShowOpenTablePicker] = useState(false);
+  const [openTablesList, setOpenTablesList] = useState<any[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Payment methods
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -376,6 +385,87 @@ const POSDashboard = () => {
     p.sku.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // ============ Open Table integration ============
+  const fetchOpenTablesList = async () => {
+    if (!selectedCompany) return;
+    const { data } = await supabase
+      .from('pos_open_tables')
+      .select('*')
+      .eq('company_id', selectedCompany.id)
+      .eq('status', 'open')
+      .order('opened_at', { ascending: false });
+    setOpenTablesList(data || []);
+  };
+
+  const loadOpenTableIntoCart = async (tableId: string) => {
+    const { data: table, error: tErr } = await supabase
+      .from('pos_open_tables')
+      .select('*')
+      .eq('id', tableId)
+      .single();
+    if (tErr || !table) {
+      toast.error('Meja tidak ditemukan');
+      return;
+    }
+    if (table.status !== 'open') {
+      toast.error('Meja sudah ditutup');
+      return;
+    }
+    const { data: items } = await supabase
+      .from('pos_open_table_items')
+      .select('*, products(name, sku, category_id, category:product_categories(name))')
+      .eq('open_table_id', tableId);
+
+    const newCart: CartItem[] = (items || []).map((it: any) => {
+      const prod = products.find((p: any) => p.id === it.product_id) as any;
+      const taxRate = prod ? getProductTaxRate(prod) : (it.tax_percent || 0);
+      const newItem: CartItem = {
+        product_id: it.product_id,
+        name: it.products?.name || prod?.name || '-',
+        sku: it.products?.sku || prod?.sku || '',
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+        cost_price: it.cost_price || prod?.cost_price || 0,
+        discount_percent: it.discount_percent || 0,
+        tax_percent: taxRate,
+        discount_amount: 0,
+        tax_amount: 0,
+        total: it.unit_price * it.quantity,
+        category_id: it.products?.category_id || prod?.category_id || null,
+        category_name: it.products?.category?.name || prod?.category?.name || null,
+      };
+      recalculateItem(newItem);
+      return newItem;
+    });
+
+    setCart(newCart);
+    setCustomerName(table.customer_name || '');
+    setCustomerPhone(table.customer_phone || '');
+    setActiveOpenTableId(table.id);
+    setActiveOpenTableName(table.table_name);
+    setShowOpenTablePicker(false);
+    toast.success(`Meja ${table.table_name} dimuat ke POS`);
+  };
+
+  const clearActiveOpenTable = () => {
+    setActiveOpenTableId(null);
+    setActiveOpenTableName('');
+  };
+
+  // Auto-load from URL ?openTableId=
+  useEffect(() => {
+    const tid = searchParams.get('openTableId');
+    if (tid && selectedCompany && !activeOpenTableId) {
+      void loadOpenTableIntoCart(tid).then(() => {
+        searchParams.delete('openTableId');
+        setSearchParams(searchParams, { replace: true });
+      });
+    }
+    // eslint-disable-next-line
+  }, [searchParams, selectedCompany?.id]);
+
+  // ============ End Open Table integration ============
+
   const addToCart = (product: any) => {
     const existingItem = cart.find(item => item.product_id === product.id);
     if (existingItem) {
@@ -622,6 +712,7 @@ const POSDashboard = () => {
           amount_paid: totalPaid,
           change_amount: changeAmount,
           status: 'completed',
+          open_table_id: activeOpenTableId,
           created_by: user?.id
         })
         .select()
@@ -805,6 +896,15 @@ const POSDashboard = () => {
         promoName: appliedPromo?.name || null,
         promoDiscount: promoDiscount
       });
+
+      // Close linked open table after successful payment
+      if (activeOpenTableId) {
+        await supabase
+          .from('pos_open_tables')
+          .update({ status: 'closed', closed_at: new Date().toISOString() })
+          .eq('id', activeOpenTableId);
+        clearActiveOpenTable();
+      }
 
       toast.success(`Transaksi ${transactionNumber} berhasil`);
       setCart([]);
@@ -1161,8 +1261,18 @@ const POSDashboard = () => {
                   Sesi Aktif: {formatCurrency(currentSession.opening_balance)} (Saldo Awal)
                 </Badge>
               )}
+              {activeOpenTableId && (
+                <Badge variant="default" className="bg-amber-500/10 text-amber-700 border-amber-300">
+                  Meja: {activeOpenTableName}
+                  <button onClick={clearActiveOpenTable} className="ml-2 hover:text-destructive"><X className="h-3 w-3 inline" /></button>
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => { void fetchOpenTablesList(); setShowOpenTablePicker(true); }}>
+                <Users className="h-4 w-4 mr-1" />
+                Open Tabel
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setShowHeldDialog(true)} disabled={heldTransactions.length === 0}>
                 <Pause className="h-4 w-4 mr-1" />
                 Ditahan ({heldTransactions.length})
@@ -1363,6 +1473,16 @@ const POSDashboard = () => {
               Buka Sesi Kasir
             </Button>
           )}
+          {activeOpenTableId && (
+            <Badge variant="default" className="bg-amber-500/10 text-amber-700 border-amber-300">
+              Meja: {activeOpenTableName}
+              <button onClick={clearActiveOpenTable} className="ml-2 hover:text-destructive"><X className="h-3 w-3 inline" /></button>
+            </Badge>
+          )}
+          <Button variant="outline" size="sm" onClick={() => { void fetchOpenTablesList(); setShowOpenTablePicker(true); }}>
+            <Users className="h-4 w-4 mr-1" />
+            Open Tabel
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowHeldDialog(true)} disabled={heldTransactions.length === 0}>
             <Pause className="h-4 w-4 mr-1" />
             Ditahan ({heldTransactions.length})
@@ -1596,6 +1716,41 @@ const POSDashboard = () => {
   function renderDialogs() {
     return (
       <>
+        {/* Open Table Picker */}
+        <Dialog open={showOpenTablePicker} onOpenChange={setShowOpenTablePicker}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Pilih Meja</DialogTitle>
+            </DialogHeader>
+            {openTablesList.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-10 w-10 mx-auto mb-2" />
+                <p>Tidak ada meja yang sedang buka</p>
+                <p className="text-xs mt-1">Buka meja baru lewat menu Open Table.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {openTablesList.map(t => (
+                  <Button
+                    key={t.id}
+                    variant="outline"
+                    className="h-auto py-3 flex flex-col items-start text-left"
+                    onClick={() => loadOpenTableIntoCart(t.id)}
+                  >
+                    <span className="font-semibold">{t.table_name}</span>
+                    {t.customer_name && (
+                      <span className="text-xs text-muted-foreground">{t.customer_name}</span>
+                    )}
+                    <span className="text-primary text-sm font-medium mt-1">
+                      {formatCurrency(t.total_amount || 0)}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Open Session Dialog */}
         <Dialog open={showOpenSessionDialog} onOpenChange={setShowOpenSessionDialog}>
           <DialogContent>
