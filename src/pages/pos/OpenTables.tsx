@@ -253,15 +253,20 @@ const OpenTables = () => {
           </DialogHeader>
           
           <div className="space-y-4">
-            {/* Add Item Button */}
+            {/* CTA: items must be added via POS */}
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+              Penambahan item & pembayaran sekarang dilakukan langsung di POS.
+              Klik <strong>Buka di POS</strong> untuk lanjut. Meja akan otomatis ditutup setelah pembayaran selesai.
+            </div>
+
             <div className="flex gap-2">
-              <Button onClick={() => setShowAddItemDialog(true)} className="flex-1">
-                <Plus className="h-4 w-4 mr-2" />
-                Tambah Item
+              <Button onClick={() => selectedTable && openInPOS(selectedTable)} className="flex-1">
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Buka di POS
               </Button>
             </div>
 
-            {/* Items Table */}
+            {/* Items snapshot (read-only) */}
             {tableItems.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <ShoppingCart className="h-8 w-8 mx-auto mb-2" />
@@ -275,7 +280,6 @@ const OpenTables = () => {
                     <TableHead className="text-center">Qty</TableHead>
                     <TableHead className="text-right">Harga</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -287,31 +291,15 @@ const OpenTables = () => {
                           <p className="text-xs text-muted-foreground">{item.products?.sku}</p>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-1">
-                          <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateItemQuantity(item.id, -1)}>
-                            -
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateItemQuantity(item.id, 1)}>
-                            +
-                          </Button>
-                        </div>
-                      </TableCell>
+                      <TableCell className="text-center">{item.quantity}</TableCell>
                       <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(item.total)}</TableCell>
-                      <TableCell>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => removeItemFromTable(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             )}
 
-            {/* Total */}
             <div className="border-t pt-4">
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
@@ -321,46 +309,12 @@ const OpenTables = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowItemsDialog(false)}>Tutup</Button>
-            <Button variant="destructive" onClick={() => selectedTable && closeTable(selectedTable)}>
-              <X className="h-4 w-4 mr-2" />
-              Tutup Meja
+            <Button variant="outline" onClick={() => setShowItemsDialog(false)}>Batal</Button>
+            <Button onClick={() => selectedTable && openInPOS(selectedTable)}>
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Lanjut Bayar di POS
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Item Dialog */}
-      <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Tambah Item ke {selectedTable?.table_name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              placeholder="Cari produk..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-96 overflow-y-auto">
-              {filteredProducts.map(product => (
-                <Button
-                  key={product.id}
-                  variant="outline"
-                  className="h-auto py-3 flex flex-col items-start text-left"
-                  onClick={() => {
-                    addItemToTable(product);
-                    setShowAddItemDialog(false);
-                    setSearchTerm('');
-                  }}
-                >
-                  <span className="font-medium text-sm truncate w-full">{product.name}</span>
-                  <span className="text-xs text-muted-foreground">{product.sku}</span>
-                  <span className="text-primary font-semibold">{formatCurrency(product.unit_price)}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
