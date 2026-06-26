@@ -385,6 +385,89 @@ const POSDashboard = () => {
     p.sku.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // ============ Open Table integration ============
+  const fetchOpenTablesList = async () => {
+    if (!selectedCompany) return;
+    const { data } = await supabase
+      .from('pos_open_tables')
+      .select('*')
+      .eq('company_id', selectedCompany.id)
+      .eq('status', 'open')
+      .order('opened_at', { ascending: false });
+    setOpenTablesList(data || []);
+  };
+
+  const loadOpenTableIntoCart = async (tableId: string) => {
+    const { data: table, error: tErr } = await supabase
+      .from('pos_open_tables')
+      .select('*')
+      .eq('id', tableId)
+      .single();
+    if (tErr || !table) {
+      toast.error('Meja tidak ditemukan');
+      return;
+    }
+    if (table.status !== 'open') {
+      toast.error('Meja sudah ditutup');
+      return;
+    }
+    const { data: items } = await supabase
+      .from('pos_open_table_items')
+      .select('*, products(name, sku, category_id, category:product_categories(name))')
+      .eq('open_table_id', tableId);
+
+    const newCart: CartItem[] = (items || []).map((it: any) => {
+      const taxRate = getProductTaxRate({
+        id: it.product_id,
+        product_tax_rates: [],
+      } as any);
+      const newItem: CartItem = {
+        product_id: it.product_id,
+        name: it.products?.name || '-',
+        sku: it.products?.sku || '',
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+        cost_price: it.cost_price || 0,
+        discount_percent: it.discount_percent || 0,
+        tax_percent: it.tax_percent || taxRate || 0,
+        discount_amount: 0,
+        tax_amount: 0,
+        total: it.unit_price * it.quantity,
+        category_id: it.products?.category_id || null,
+        category_name: it.products?.category?.name || null,
+      };
+      recalculateItem(newItem);
+      return newItem;
+    });
+
+    setCart(newCart);
+    setCustomerName(table.customer_name || '');
+    setCustomerPhone(table.customer_phone || '');
+    setActiveOpenTableId(table.id);
+    setActiveOpenTableName(table.table_name);
+    setShowOpenTablePicker(false);
+    toast.success(`Meja ${table.table_name} dimuat ke POS`);
+  };
+
+  const clearActiveOpenTable = () => {
+    setActiveOpenTableId(null);
+    setActiveOpenTableName('');
+  };
+
+  // Auto-load from URL ?openTableId=
+  useEffect(() => {
+    const tid = searchParams.get('openTableId');
+    if (tid && selectedCompany && !activeOpenTableId) {
+      void loadOpenTableIntoCart(tid).then(() => {
+        searchParams.delete('openTableId');
+        setSearchParams(searchParams, { replace: true });
+      });
+    }
+    // eslint-disable-next-line
+  }, [searchParams, selectedCompany?.id]);
+
+  // ============ End Open Table integration ============
+
   const addToCart = (product: any) => {
     const existingItem = cart.find(item => item.product_id === product.id);
     if (existingItem) {
