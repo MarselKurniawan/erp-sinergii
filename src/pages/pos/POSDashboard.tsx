@@ -128,6 +128,13 @@ const POSDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Open table integration
+  const [activeOpenTableId, setActiveOpenTableId] = useState<string | null>(null);
+  const [activeOpenTableName, setActiveOpenTableName] = useState<string>('');
+  const [showOpenTablePicker, setShowOpenTablePicker] = useState(false);
+  const [openTablesList, setOpenTablesList] = useState<any[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Payment methods
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
