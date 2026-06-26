@@ -1473,6 +1473,16 @@ const POSDashboard = () => {
               Buka Sesi Kasir
             </Button>
           )}
+          {activeOpenTableId && (
+            <Badge variant="default" className="bg-amber-500/10 text-amber-700 border-amber-300">
+              Meja: {activeOpenTableName}
+              <button onClick={clearActiveOpenTable} className="ml-2 hover:text-destructive"><X className="h-3 w-3 inline" /></button>
+            </Badge>
+          )}
+          <Button variant="outline" size="sm" onClick={() => { void fetchOpenTablesList(); setShowOpenTablePicker(true); }}>
+            <Users className="h-4 w-4 mr-1" />
+            Open Tabel
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowHeldDialog(true)} disabled={heldTransactions.length === 0}>
             <Pause className="h-4 w-4 mr-1" />
             Ditahan ({heldTransactions.length})
