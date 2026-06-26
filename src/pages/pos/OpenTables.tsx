@@ -48,23 +48,19 @@ interface TableItem {
 const OpenTables = () => {
   const { selectedCompany } = useCompany();
   const { user } = useAuth();
-  const { products } = useProducts();
-  
+  const navigate = useNavigate();
+
   const [openTables, setOpenTables] = useState<OpenTable[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showItemsDialog, setShowItemsDialog] = useState(false);
   const [selectedTable, setSelectedTable] = useState<OpenTable | null>(null);
   const [tableItems, setTableItems] = useState<TableItem[]>([]);
-  
+
   // New table form
   const [newTableName, setNewTableName] = useState('');
   const [newCustomerName, setNewCustomerName] = useState('');
   const [newCustomerPhone, setNewCustomerPhone] = useState('');
-  
-  // Add item form
-  const [showAddItemDialog, setShowAddItemDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchOpenTables = async () => {
     if (!selectedCompany) return;
