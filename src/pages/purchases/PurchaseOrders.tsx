@@ -638,6 +638,7 @@ export const PurchaseOrders: React.FC = () => {
                     <th>Date</th>
                     <th>Supplier</th>
                     <th>Status</th>
+                    <th>Approval</th>
                     <th className="text-right">Total</th>
                     <th className="text-right">DP Paid</th>
                     <th className="text-right">Actions</th>
@@ -652,6 +653,11 @@ export const PurchaseOrders: React.FC = () => {
                       <td>
                         <span className={cn('badge-status capitalize', getStatusBadgeClass(order.status))}>
                           {order.status === 'invoiced' ? 'Billed' : order.status}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={cn('badge-status capitalize', getStatusBadgeClass(order.approval_status || 'pending'))}>
+                          {order.approval_status || 'pending'}
                         </span>
                       </td>
                       <td className="text-right font-medium">{formatCurrency(order.total_amount || 0)}</td>
@@ -682,6 +688,7 @@ export const PurchaseOrders: React.FC = () => {
                               size="sm"
                               onClick={() => handleGenerateBill(order)}
                               className="text-primary"
+                              disabled={order.approval_status !== 'approved'}
                               title="Generate Bill"
                             >
                               <FileText className="w-4 h-4" />
