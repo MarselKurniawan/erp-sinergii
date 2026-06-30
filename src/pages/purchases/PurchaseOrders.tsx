@@ -36,6 +36,9 @@ interface PurchaseOrder {
   total_amount: number;
   dp_amount: number;
   dp_paid: number;
+  approval_status?: string;
+  approved_at?: string | null;
+  rejection_reason?: string | null;
   notes: string | null;
   suppliers?: { id: string; code: string; name: string };
 }
