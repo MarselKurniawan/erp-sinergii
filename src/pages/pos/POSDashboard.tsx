@@ -1533,6 +1533,17 @@ const POSDashboard = () => {
                 <Button variant="outline" onClick={holdTransaction} disabled={cart.length === 0}>
                   <Pause className="h-4 w-4" />
                 </Button>
+                {activeOpenTableId && (
+                  <Button
+                    variant="secondary"
+                    onClick={saveCartToOpenTable}
+                    disabled={cart.length === 0 || isSavingOpenTable}
+                    className="flex-1"
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Simpan ke {activeOpenTableName}
+                  </Button>
+                )}
                 <Button className="flex-1" size="lg" onClick={openPaymentDialog} disabled={cart.length === 0}>
                   <Receipt className="mr-2 h-5 w-5" />
                   Bayar
@@ -1790,6 +1801,17 @@ const POSDashboard = () => {
                     <Button variant="outline" onClick={holdTransaction}>
                       <Pause className="h-4 w-4" />
                     </Button>
+                    {activeOpenTableId && (
+                      <Button
+                        variant="secondary"
+                        onClick={saveCartToOpenTable}
+                        disabled={isSavingOpenTable}
+                        className="flex-1"
+                      >
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        Simpan ke {activeOpenTableName}
+                      </Button>
+                    )}
                     <Button className="flex-1" size="lg" onClick={openPaymentDialog}>
                       <Receipt className="mr-2 h-5 w-5" />
                       Bayar
