@@ -301,7 +301,7 @@ export const PurchaseOrders: React.FC = () => {
         bill_number: billNumber,
         bill_date: new Date().toISOString().split('T')[0],
         due_date: dueDate.toISOString().split('T')[0],
-        status: 'sent',
+        status: 'draft',
         subtotal: order.subtotal,
         tax_amount: order.tax_amount,
         total_amount: billTotal, // Reduced by DP
@@ -320,65 +320,7 @@ export const PurchaseOrders: React.FC = () => {
 
     await supabase.from('purchase_orders').update({ status: 'invoiced' }).eq('id', order.id);
 
-    // Create journal entry for accounts payable
-    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
-    
-    const { data: journalEntry, error: journalError } = await supabase
-      .from('journal_entries')
-      .insert({
-        company_id: selectedCompany.id,
-        entry_number: entryNumber,
-        entry_date: new Date().toISOString().split('T')[0],
-        description: `Bill ${billNumber} - ${order.suppliers?.name || 'Supplier'}`,
-        reference_type: 'bill',
-        reference_id: bill.id,
-        is_posted: true,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (!journalError && journalEntry) {
-      // Get inventory/expense and payable accounts
-      const { data: inventoryAccount } = await supabase
-        .from('chart_of_accounts')
-        .select('id')
-        .eq('company_id', selectedCompany.id)
-        .eq('account_type', 'asset')
-        .or('name.ilike.%inventory%,name.ilike.%persediaan%')
-        .limit(1)
-        .single();
-
-      const { data: payableAccount } = await supabase
-        .from('chart_of_accounts')
-        .select('id')
-        .eq('company_id', selectedCompany.id)
-        .eq('account_type', 'liability')
-        .or('name.ilike.%payable%,name.ilike.%hutang%')
-        .limit(1)
-        .single();
-
-      if (inventoryAccount && payableAccount) {
-        await supabase.from('journal_entry_lines').insert([
-          {
-            journal_entry_id: journalEntry.id,
-            account_id: inventoryAccount.id,
-            debit_amount: order.total_amount,
-            credit_amount: 0,
-            description: 'Inventory / Purchases',
-          },
-          {
-            journal_entry_id: journalEntry.id,
-            account_id: payableAccount.id,
-            debit_amount: 0,
-            credit_amount: order.total_amount,
-            description: 'Accounts Payable',
-          },
-        ]);
-      }
-    }
-
-    toast.success(`Bill ${billNumber} generated successfully`);
+    toast.success(`Bill ${billNumber} dibuat dan menunggu approval`);
     fetchOrders();
     setIsViewDialogOpen(false);
   };
