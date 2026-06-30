@@ -278,6 +278,10 @@ export const PurchaseOrders: React.FC = () => {
 
   const handleGenerateBill = async (order: PurchaseOrder) => {
     if (!selectedCompany || !user) return;
+    if (order.approval_status !== 'approved') {
+      toast.error('Purchase Order harus di-approve dulu sebelum dibuatkan Bill');
+      return;
+    }
 
     // Calculate bill amount (minus DP already paid)
     const dpPaid = order.dp_paid || 0;
