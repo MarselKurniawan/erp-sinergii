@@ -251,11 +251,16 @@ export const PurchaseOrders: React.FC = () => {
     setIsViewDialogOpen(true);
   };
 
-  const handleConfirmOrder = async (orderId: string) => {
+  const handleConfirmOrder = async (order: PurchaseOrder) => {
+    if (order.approval_status !== 'approved') {
+      toast.error('Purchase Order harus di-approve dulu di Approval Center sebelum bisa dikonfirmasi');
+      return;
+    }
+
     const { error } = await supabase
       .from('purchase_orders')
       .update({ status: 'confirmed' })
-      .eq('id', orderId);
+      .eq('id', order.id);
 
     if (error) {
       toast.error('Failed to confirm order');
