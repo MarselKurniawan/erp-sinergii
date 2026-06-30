@@ -453,7 +453,7 @@ const POSDashboard = () => {
     setActiveOpenTableName('');
   };
 
-  const saveCartToOpenTable = async () => {
+  const saveCartToOpenTable = async (clearAfterSave = true) => {
     if (!selectedCompany || !activeOpenTableId) return;
     if (cart.length === 0) {
       toast.error('Keranjang meja masih kosong');
@@ -503,7 +503,20 @@ const POSDashboard = () => {
 
       if (tableError) throw tableError;
 
-      toast.success(`Pesanan disimpan ke ${activeOpenTableName}`);
+      const savedTableName = activeOpenTableName;
+      if (clearAfterSave) {
+        setCart([]);
+        setCustomerName('');
+        setCustomerPhone('');
+        setSelectedCustomerId('');
+        setAppliedPromo(null);
+        setPromoDiscount(0);
+        setPromoCode('');
+        clearActiveOpenTable();
+        await fetchOpenTablesList();
+      }
+
+      toast.success(`Pesanan ditambahkan ke ${savedTableName}. Meja tetap terbuka sampai dibayar.`);
     } catch (error: any) {
       toast.error('Gagal menyimpan meja: ' + error.message);
     } finally {
@@ -1536,17 +1549,17 @@ const POSDashboard = () => {
                 {activeOpenTableId && (
                   <Button
                     variant="secondary"
-                    onClick={saveCartToOpenTable}
+                    onClick={() => saveCartToOpenTable(true)}
                     disabled={cart.length === 0 || isSavingOpenTable}
                     className="flex-1"
                   >
                     <ShoppingCart className="mr-2 h-5 w-5" />
-                    Simpan ke {activeOpenTableName}
+                    Tambah ke Meja {activeOpenTableName}
                   </Button>
                 )}
                 <Button className="flex-1" size="lg" onClick={openPaymentDialog} disabled={cart.length === 0}>
                   <Receipt className="mr-2 h-5 w-5" />
-                  Bayar
+                  {activeOpenTableId ? 'Bayar & Tutup Meja' : 'Bayar'}
                 </Button>
               </div>
             </div>
@@ -1804,17 +1817,17 @@ const POSDashboard = () => {
                     {activeOpenTableId && (
                       <Button
                         variant="secondary"
-                        onClick={saveCartToOpenTable}
+                        onClick={() => saveCartToOpenTable(true)}
                         disabled={isSavingOpenTable}
                         className="flex-1"
                       >
                         <ShoppingCart className="mr-2 h-5 w-5" />
-                        Simpan ke {activeOpenTableName}
+                        Tambah ke Meja {activeOpenTableName}
                       </Button>
                     )}
                     <Button className="flex-1" size="lg" onClick={openPaymentDialog}>
                       <Receipt className="mr-2 h-5 w-5" />
-                      Bayar
+                      {activeOpenTableId ? 'Bayar & Tutup Meja' : 'Bayar'}
                     </Button>
                   </div>
                 </>
