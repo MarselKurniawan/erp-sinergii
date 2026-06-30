@@ -30,6 +30,17 @@ import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { generateDocumentNumber } from '@/lib/documentNumber';
 
+const getApprovalBadgeClass = (status: string) => {
+  switch (status) {
+    case 'approved':
+      return 'bg-success/10 text-success border-success/20';
+    case 'rejected':
+      return 'bg-destructive/10 text-destructive border-destructive/20';
+    default:
+      return 'bg-warning/10 text-warning border-warning/20';
+  }
+};
+
 interface Bill {
   id: string;
   bill_number: string;
@@ -475,7 +486,7 @@ export const PurchasePayments: React.FC = () => {
                       <td>{formatDate(payment.payment_date)}</td>
                       <td>{payment.suppliers?.name}</td>
                       <td>
-                        <span className={cn('badge-status capitalize', getStatusBadgeClass(payment.approval_status || 'pending'))}>
+                        <span className={cn('badge-status capitalize', getApprovalBadgeClass(payment.approval_status || 'pending'))}>
                           {payment.approval_status || 'pending'}
                         </span>
                       </td>
