@@ -64,6 +64,134 @@ export type Database = {
           },
         ]
       }
+      approval_email_queue: {
+        Row: {
+          approval_request_id: string
+          body: string
+          company_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          recipient_email: string | null
+          recipient_user_id: string
+          sent_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          approval_request_id: string
+          body: string
+          company_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient_email?: string | null
+          recipient_user_id: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          approval_request_id?: string
+          body?: string
+          company_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient_email?: string | null
+          recipient_user_id?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_email_queue_approval_request_id_fkey"
+            columns: ["approval_request_id"]
+            isOneToOne: false
+            referencedRelation: "approval_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_email_queue_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_requests: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          document_number: string
+          entity_id: string
+          entity_type: string
+          id: string
+          notes: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          requested_at: string
+          requested_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          document_number: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          notes?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          document_number?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          notes?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_depreciations: {
         Row: {
           accumulated_total: number
@@ -241,6 +369,10 @@ export type Database = {
       }
       bills: {
         Row: {
+          approval_requested_at: string | null
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           bill_date: string
           bill_number: string
           company_id: string
@@ -252,6 +384,9 @@ export type Database = {
           outstanding_amount: number | null
           paid_amount: number | null
           purchase_order_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number | null
           supplier_id: string
@@ -263,6 +398,10 @@ export type Database = {
           voided_by: string | null
         }
         Insert: {
+          approval_requested_at?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           bill_date?: string
           bill_number: string
           company_id: string
@@ -274,6 +413,9 @@ export type Database = {
           outstanding_amount?: number | null
           paid_amount?: number | null
           purchase_order_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number | null
           supplier_id: string
@@ -285,6 +427,10 @@ export type Database = {
           voided_by?: string | null
         }
         Update: {
+          approval_requested_at?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           bill_date?: string
           bill_number?: string
           company_id?: string
@@ -296,6 +442,9 @@ export type Database = {
           outstanding_amount?: number | null
           paid_amount?: number | null
           purchase_order_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number | null
           supplier_id?: string
@@ -1877,6 +2026,10 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          approval_requested_at: string | null
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           cash_account_id: string | null
           company_id: string
           created_at: string
@@ -1887,6 +2040,9 @@ export type Database = {
           payment_date: string
           payment_number: string
           payment_type: Database["public"]["Enums"]["payment_type"]
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           supplier_id: string | null
           void_reason: string | null
           voided_at: string | null
@@ -1894,6 +2050,10 @@ export type Database = {
         }
         Insert: {
           amount: number
+          approval_requested_at?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           cash_account_id?: string | null
           company_id: string
           created_at?: string
@@ -1904,6 +2064,9 @@ export type Database = {
           payment_date?: string
           payment_number: string
           payment_type: Database["public"]["Enums"]["payment_type"]
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           supplier_id?: string | null
           void_reason?: string | null
           voided_at?: string | null
@@ -1911,6 +2074,10 @@ export type Database = {
         }
         Update: {
           amount?: number
+          approval_requested_at?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           cash_account_id?: string | null
           company_id?: string
           created_at?: string
@@ -1921,6 +2088,9 @@ export type Database = {
           payment_date?: string
           payment_number?: string
           payment_type?: Database["public"]["Enums"]["payment_type"]
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           supplier_id?: string | null
           void_reason?: string | null
           voided_at?: string | null
@@ -3224,6 +3394,10 @@ export type Database = {
       }
       purchase_orders: {
         Row: {
+          approval_requested_at: string | null
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -3234,6 +3408,9 @@ export type Database = {
           notes: string | null
           order_date: string
           order_number: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number | null
           supplier_id: string
@@ -3245,6 +3422,10 @@ export type Database = {
           voided_by: string | null
         }
         Insert: {
+          approval_requested_at?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -3255,6 +3436,9 @@ export type Database = {
           notes?: string | null
           order_date?: string
           order_number: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number | null
           supplier_id: string
@@ -3266,6 +3450,10 @@ export type Database = {
           voided_by?: string | null
         }
         Update: {
+          approval_requested_at?: string | null
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -3276,6 +3464,9 @@ export type Database = {
           notes?: string | null
           order_date?: string
           order_number?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number | null
           supplier_id?: string
@@ -4702,6 +4893,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      approval_document_link: {
+        Args: { _entity_type: string }
+        Returns: string
+      }
+      approve_request: {
+        Args: { _notes?: string; _request_id: string }
+        Returns: undefined
+      }
       auto_match_bank_lines: {
         Args: { p_statement_id: string }
         Returns: number
@@ -4761,6 +4960,10 @@ export type Database = {
         Returns: boolean
       }
       is_superadmin: { Args: { _user_id: string }; Returns: boolean }
+      reject_request: {
+        Args: { _reason?: string; _request_id: string }
+        Returns: undefined
+      }
       start_production: { Args: { p_order_id: string }; Returns: undefined }
       user_has_company_access: {
         Args: { _company_id: string; _user_id: string }
