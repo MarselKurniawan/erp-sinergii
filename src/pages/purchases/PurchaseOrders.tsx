@@ -826,8 +826,12 @@ export const PurchaseOrders: React.FC = () => {
                   </Button>
                 )}
                 {viewingOrder.status === 'draft' && (
-                  <Button onClick={() => handleConfirmOrder(viewingOrder.id)} className="flex-1">
-                    Confirm Order
+                  <Button
+                    onClick={() => handleConfirmOrder(viewingOrder)}
+                    disabled={viewingOrder.approval_status !== 'approved'}
+                    className="flex-1"
+                  >
+                    {viewingOrder.approval_status === 'approved' ? 'Confirm Order' : 'Menunggu Approval'}
                   </Button>
                 )}
                 {viewingOrder.status === 'confirmed' && (
@@ -841,9 +845,13 @@ export const PurchaseOrders: React.FC = () => {
                   </Button>
                 )}
                 {viewingOrder.status === 'received' && (
-                  <Button onClick={() => handleGenerateBill(viewingOrder)} className="flex-1 gradient-primary text-primary-foreground">
+                  <Button
+                    onClick={() => handleGenerateBill(viewingOrder)}
+                    disabled={viewingOrder.approval_status !== 'approved'}
+                    className="flex-1 gradient-primary text-primary-foreground"
+                  >
                     <FileText className="w-4 h-4 mr-2" />
-                    Generate Bill
+                    {viewingOrder.approval_status === 'approved' ? 'Generate Bill' : 'Menunggu Approval'}
                   </Button>
                 )}
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} className="flex-1">
