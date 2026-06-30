@@ -30,12 +30,24 @@ import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { generateDocumentNumber } from '@/lib/documentNumber';
 
+const getApprovalBadgeClass = (status: string) => {
+  switch (status) {
+    case 'approved':
+      return 'bg-success/10 text-success border-success/20';
+    case 'rejected':
+      return 'bg-destructive/10 text-destructive border-destructive/20';
+    default:
+      return 'bg-warning/10 text-warning border-warning/20';
+  }
+};
+
 interface Bill {
   id: string;
   bill_number: string;
   due_date: string;
   total_amount: number;
   outstanding_amount: number;
+  approval_status?: string;
   suppliers?: { name: string };
 }
 
@@ -46,6 +58,7 @@ interface Payment {
   amount: number;
   supplier_id: string;
   notes: string | null;
+  approval_status?: string;
   suppliers?: { id: string; name: string };
   cash_account?: { id: string; code: string; name: string };
 }
@@ -113,6 +126,7 @@ export const PurchasePayments: React.FC = () => {
       .select('id, bill_number, due_date, total_amount, outstanding_amount, suppliers(name)')
       .eq('company_id', selectedCompany.id)
       .eq('supplier_id', supplierId)
+      .eq('approval_status', 'approved')
       .gt('outstanding_amount', 0)
       .order('due_date');
 
@@ -201,89 +215,16 @@ export const PurchasePayments: React.FC = () => {
       return;
     }
 
-    // Create payment allocations and update bills
+    // Create payment allocations. Bill balances and journals are applied after approval.
     for (const alloc of selectedAllocations) {
       await supabase.from('payment_allocations').insert({
         payment_id: payment.id,
         bill_id: alloc.bill_id,
         amount: alloc.allocation_amount,
       });
-
-      const { data: bill } = await supabase
-        .from('bills')
-        .select('paid_amount, outstanding_amount, total_amount')
-        .eq('id', alloc.bill_id)
-        .single();
-
-      if (bill) {
-        const newPaidAmount = (bill.paid_amount || 0) + alloc.allocation_amount;
-        const newOutstanding = bill.total_amount - newPaidAmount;
-        const newStatus = newOutstanding <= 0 ? 'paid' : 'partial';
-
-        await supabase
-          .from('bills')
-          .update({
-            paid_amount: newPaidAmount,
-            outstanding_amount: newOutstanding,
-            status: newStatus,
-          })
-          .eq('id', alloc.bill_id);
-      }
     }
 
-    // Create journal entry
-    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
-    
-    const supplier = suppliers.find(s => s.id === formData.supplier_id);
-
-    const { data: journalEntry, error: journalError } = await supabase
-      .from('journal_entries')
-      .insert({
-        company_id: selectedCompany.id,
-        entry_number: entryNumber,
-        entry_date: formData.payment_date,
-        description: `Payment ${paymentNumber} to ${supplier?.name || 'Supplier'}`,
-        reference_type: 'payment',
-        reference_id: payment.id,
-        is_posted: true,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (!journalError && journalEntry) {
-      const { data: payableAccount } = await supabase
-        .from('chart_of_accounts')
-        .select('id')
-        .eq('company_id', selectedCompany.id)
-        .eq('account_type', 'liability')
-        .or('name.ilike.%payable%,name.ilike.%hutang%')
-        .limit(1)
-        .single();
-
-      const cashAccountId = formData.cash_account_id || cashBankAccounts[0]?.id;
-
-      if (payableAccount && cashAccountId) {
-        await supabase.from('journal_entry_lines').insert([
-          {
-            journal_entry_id: journalEntry.id,
-            account_id: payableAccount.id,
-            debit_amount: totalPayment,
-            credit_amount: 0,
-            description: 'Accounts Payable',
-          },
-          {
-            journal_entry_id: journalEntry.id,
-            account_id: cashAccountId,
-            debit_amount: 0,
-            credit_amount: totalPayment,
-            description: 'Cash/Bank',
-          },
-        ]);
-      }
-    }
-
-    toast.success(`Payment ${paymentNumber} recorded successfully`);
+    toast.success(`Payment ${paymentNumber} menunggu approval`);
     fetchPayments();
     resetForm();
     setIsDialogOpen(false);
@@ -533,6 +474,7 @@ export const PurchasePayments: React.FC = () => {
                     <th>Payment #</th>
                     <th>Date</th>
                     <th>Supplier</th>
+                    <th>Approval</th>
                     <th>Account</th>
                     <th className="text-right">Amount</th>
                   </tr>
@@ -543,6 +485,11 @@ export const PurchasePayments: React.FC = () => {
                       <td className="font-mono font-medium">{payment.payment_number}</td>
                       <td>{formatDate(payment.payment_date)}</td>
                       <td>{payment.suppliers?.name}</td>
+                      <td>
+                        <span className={cn('badge-status capitalize', getApprovalBadgeClass(payment.approval_status || 'pending'))}>
+                          {payment.approval_status || 'pending'}
+                        </span>
+                      </td>
                       <td>{payment.cash_account?.name || '-'}</td>
                       <td className="text-right font-medium text-destructive">
                         {formatCurrency(payment.amount)}

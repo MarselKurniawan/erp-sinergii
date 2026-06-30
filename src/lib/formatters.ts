@@ -42,6 +42,9 @@ export const getStatusBadgeClass = (status: string) => {
     partial: 'badge-partial',
     overdue: 'badge-overdue',
     cancelled: 'badge-cancelled',
+    pending: 'bg-warning/10 text-warning border-warning/20',
+    approved: 'bg-success/10 text-success border-success/20',
+    rejected: 'bg-destructive/10 text-destructive border-destructive/20',
   };
   return statusMap[status] || 'badge-draft';
 };

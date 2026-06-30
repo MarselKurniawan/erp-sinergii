@@ -36,6 +36,9 @@ interface PurchaseOrder {
   total_amount: number;
   dp_amount: number;
   dp_paid: number;
+  approval_status?: string;
+  approved_at?: string | null;
+  rejection_reason?: string | null;
   notes: string | null;
   suppliers?: { id: string; code: string; name: string };
 }
@@ -248,11 +251,16 @@ export const PurchaseOrders: React.FC = () => {
     setIsViewDialogOpen(true);
   };
 
-  const handleConfirmOrder = async (orderId: string) => {
+  const handleConfirmOrder = async (order: PurchaseOrder) => {
+    if (order.approval_status !== 'approved') {
+      toast.error('Purchase Order harus di-approve dulu di Approval Center sebelum bisa dikonfirmasi');
+      return;
+    }
+
     const { error } = await supabase
       .from('purchase_orders')
       .update({ status: 'confirmed' })
-      .eq('id', orderId);
+      .eq('id', order.id);
 
     if (error) {
       toast.error('Failed to confirm order');
@@ -270,6 +278,10 @@ export const PurchaseOrders: React.FC = () => {
 
   const handleGenerateBill = async (order: PurchaseOrder) => {
     if (!selectedCompany || !user) return;
+    if (order.approval_status !== 'approved') {
+      toast.error('Purchase Order harus di-approve dulu sebelum dibuatkan Bill');
+      return;
+    }
 
     // Calculate bill amount (minus DP already paid)
     const dpPaid = order.dp_paid || 0;
@@ -289,7 +301,7 @@ export const PurchaseOrders: React.FC = () => {
         bill_number: billNumber,
         bill_date: new Date().toISOString().split('T')[0],
         due_date: dueDate.toISOString().split('T')[0],
-        status: 'sent',
+        status: 'draft',
         subtotal: order.subtotal,
         tax_amount: order.tax_amount,
         total_amount: billTotal, // Reduced by DP
@@ -308,65 +320,7 @@ export const PurchaseOrders: React.FC = () => {
 
     await supabase.from('purchase_orders').update({ status: 'invoiced' }).eq('id', order.id);
 
-    // Create journal entry for accounts payable
-    const entryNumber = await generateDocumentNumber(selectedCompany.id, 'JE');
-    
-    const { data: journalEntry, error: journalError } = await supabase
-      .from('journal_entries')
-      .insert({
-        company_id: selectedCompany.id,
-        entry_number: entryNumber,
-        entry_date: new Date().toISOString().split('T')[0],
-        description: `Bill ${billNumber} - ${order.suppliers?.name || 'Supplier'}`,
-        reference_type: 'bill',
-        reference_id: bill.id,
-        is_posted: true,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (!journalError && journalEntry) {
-      // Get inventory/expense and payable accounts
-      const { data: inventoryAccount } = await supabase
-        .from('chart_of_accounts')
-        .select('id')
-        .eq('company_id', selectedCompany.id)
-        .eq('account_type', 'asset')
-        .or('name.ilike.%inventory%,name.ilike.%persediaan%')
-        .limit(1)
-        .single();
-
-      const { data: payableAccount } = await supabase
-        .from('chart_of_accounts')
-        .select('id')
-        .eq('company_id', selectedCompany.id)
-        .eq('account_type', 'liability')
-        .or('name.ilike.%payable%,name.ilike.%hutang%')
-        .limit(1)
-        .single();
-
-      if (inventoryAccount && payableAccount) {
-        await supabase.from('journal_entry_lines').insert([
-          {
-            journal_entry_id: journalEntry.id,
-            account_id: inventoryAccount.id,
-            debit_amount: order.total_amount,
-            credit_amount: 0,
-            description: 'Inventory / Purchases',
-          },
-          {
-            journal_entry_id: journalEntry.id,
-            account_id: payableAccount.id,
-            debit_amount: 0,
-            credit_amount: order.total_amount,
-            description: 'Accounts Payable',
-          },
-        ]);
-      }
-    }
-
-    toast.success(`Bill ${billNumber} generated successfully`);
+    toast.success(`Bill ${billNumber} dibuat dan menunggu approval`);
     fetchOrders();
     setIsViewDialogOpen(false);
   };
@@ -626,6 +580,7 @@ export const PurchaseOrders: React.FC = () => {
                     <th>Date</th>
                     <th>Supplier</th>
                     <th>Status</th>
+                    <th>Approval</th>
                     <th className="text-right">Total</th>
                     <th className="text-right">DP Paid</th>
                     <th className="text-right">Actions</th>
@@ -640,6 +595,11 @@ export const PurchaseOrders: React.FC = () => {
                       <td>
                         <span className={cn('badge-status capitalize', getStatusBadgeClass(order.status))}>
                           {order.status === 'invoiced' ? 'Billed' : order.status}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={cn('badge-status capitalize', getStatusBadgeClass(order.approval_status || 'pending'))}>
+                          {order.approval_status || 'pending'}
                         </span>
                       </td>
                       <td className="text-right font-medium">{formatCurrency(order.total_amount || 0)}</td>
@@ -670,6 +630,7 @@ export const PurchaseOrders: React.FC = () => {
                               size="sm"
                               onClick={() => handleGenerateBill(order)}
                               className="text-primary"
+                              disabled={order.approval_status !== 'approved'}
                               title="Generate Bill"
                             >
                               <FileText className="w-4 h-4" />
@@ -714,6 +675,15 @@ export const PurchaseOrders: React.FC = () => {
                   <span className={cn('badge-status capitalize', getStatusBadgeClass(viewingOrder.status))}>
                     {viewingOrder.status === 'invoiced' ? 'Billed' : viewingOrder.status}
                   </span>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Approval</p>
+                  <span className={cn('badge-status capitalize', getStatusBadgeClass(viewingOrder.approval_status || 'pending'))}>
+                    {viewingOrder.approval_status || 'pending'}
+                  </span>
+                  {viewingOrder.rejection_reason && (
+                    <p className="mt-1 text-xs text-destructive">{viewingOrder.rejection_reason}</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Supplier</p>
@@ -798,8 +768,12 @@ export const PurchaseOrders: React.FC = () => {
                   </Button>
                 )}
                 {viewingOrder.status === 'draft' && (
-                  <Button onClick={() => handleConfirmOrder(viewingOrder.id)} className="flex-1">
-                    Confirm Order
+                  <Button
+                    onClick={() => handleConfirmOrder(viewingOrder)}
+                    disabled={viewingOrder.approval_status !== 'approved'}
+                    className="flex-1"
+                  >
+                    {viewingOrder.approval_status === 'approved' ? 'Confirm Order' : 'Menunggu Approval'}
                   </Button>
                 )}
                 {viewingOrder.status === 'confirmed' && (
@@ -813,9 +787,13 @@ export const PurchaseOrders: React.FC = () => {
                   </Button>
                 )}
                 {viewingOrder.status === 'received' && (
-                  <Button onClick={() => handleGenerateBill(viewingOrder)} className="flex-1 gradient-primary text-primary-foreground">
+                  <Button
+                    onClick={() => handleGenerateBill(viewingOrder)}
+                    disabled={viewingOrder.approval_status !== 'approved'}
+                    className="flex-1 gradient-primary text-primary-foreground"
+                  >
                     <FileText className="w-4 h-4 mr-2" />
-                    Generate Bill
+                    {viewingOrder.approval_status === 'approved' ? 'Generate Bill' : 'Menunggu Approval'}
                   </Button>
                 )}
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} className="flex-1">

@@ -38,6 +38,9 @@ interface Bill {
   total_amount: number;
   paid_amount: number;
   outstanding_amount: number;
+  approval_status?: string;
+  approved_at?: string | null;
+  rejection_reason?: string | null;
   notes: string | null;
   suppliers?: Supplier;
 }
@@ -271,6 +274,7 @@ export const Bills: React.FC = () => {
                     <th>Due Date</th>
                     <th>Supplier</th>
                     <th>Status</th>
+                    <th>Approval</th>
                     <th className="text-right">Total</th>
                     <th className="text-right">Outstanding</th>
                     <th className="text-right">Actions</th>
@@ -286,6 +290,11 @@ export const Bills: React.FC = () => {
                       <td>
                         <span className={cn('badge-status capitalize', getStatusBadgeClass(bill.status))}>
                           {bill.status === 'sent' ? 'Pending' : bill.status}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={cn('badge-status capitalize', getStatusBadgeClass(bill.approval_status || 'pending'))}>
+                          {bill.approval_status || 'pending'}
                         </span>
                       </td>
                       <td className="text-right font-medium">{formatCurrency(bill.total_amount || 0)}</td>
@@ -338,6 +347,15 @@ export const Bills: React.FC = () => {
                     <span className={cn('badge-status capitalize', getStatusBadgeClass(viewingBill.status))}>
                       {viewingBill.status === 'sent' ? 'Pending' : viewingBill.status}
                     </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Approval</p>
+                    <span className={cn('badge-status capitalize', getStatusBadgeClass(viewingBill.approval_status || 'pending'))}>
+                      {viewingBill.approval_status || 'pending'}
+                    </span>
+                    {viewingBill.rejection_reason && (
+                      <p className="mt-1 text-xs text-destructive">{viewingBill.rejection_reason}</p>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Supplier</p>

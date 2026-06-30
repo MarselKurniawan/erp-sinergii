@@ -134,6 +134,7 @@ const POSDashboard = () => {
   const [activeOpenTableName, setActiveOpenTableName] = useState<string>('');
   const [showOpenTablePicker, setShowOpenTablePicker] = useState(false);
   const [openTablesList, setOpenTablesList] = useState<any[]>([]);
+  const [isSavingOpenTable, setIsSavingOpenTable] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Payment methods
@@ -450,6 +451,77 @@ const POSDashboard = () => {
   const clearActiveOpenTable = () => {
     setActiveOpenTableId(null);
     setActiveOpenTableName('');
+  };
+
+  const saveCartToOpenTable = async (clearAfterSave = true) => {
+    if (!selectedCompany || !activeOpenTableId) return;
+    if (cart.length === 0) {
+      toast.error('Keranjang meja masih kosong');
+      return;
+    }
+
+    setIsSavingOpenTable(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from('pos_open_table_items')
+        .delete()
+        .eq('open_table_id', activeOpenTableId);
+
+      if (deleteError) throw deleteError;
+
+      const tableItems = cart.map(item => ({
+        open_table_id: activeOpenTableId,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        cost_price: item.cost_price,
+        discount_percent: item.discount_percent,
+        discount_amount: item.discount_amount,
+        tax_percent: item.tax_percent,
+        tax_amount: item.tax_amount,
+        total: item.total,
+      }));
+
+      const { error: insertError } = await supabase
+        .from('pos_open_table_items')
+        .insert(tableItems);
+
+      if (insertError) throw insertError;
+
+      const { error: tableError } = await supabase
+        .from('pos_open_tables')
+        .update({
+          customer_name: customerName || null,
+          customer_phone: customerPhone || null,
+          subtotal,
+          tax_amount: totalTax,
+          discount_amount: totalDiscount,
+          total_amount: grandTotal,
+          total_cogs: totalCogs,
+        })
+        .eq('id', activeOpenTableId);
+
+      if (tableError) throw tableError;
+
+      const savedTableName = activeOpenTableName;
+      if (clearAfterSave) {
+        setCart([]);
+        setCustomerName('');
+        setCustomerPhone('');
+        setSelectedCustomerId('');
+        setAppliedPromo(null);
+        setPromoDiscount(0);
+        setPromoCode('');
+        clearActiveOpenTable();
+        await fetchOpenTablesList();
+      }
+
+      toast.success(`Pesanan ditambahkan ke ${savedTableName}. Meja tetap terbuka sampai dibayar.`);
+    } catch (error: any) {
+      toast.error('Gagal menyimpan meja: ' + error.message);
+    } finally {
+      setIsSavingOpenTable(false);
+    }
   };
 
   // Auto-load from URL ?openTableId=
@@ -897,11 +969,45 @@ const POSDashboard = () => {
         promoDiscount: promoDiscount
       });
 
-      // Close linked open table after successful payment
+      // Sync final cart and close linked open table after successful payment
       if (activeOpenTableId) {
         await supabase
+          .from('pos_open_table_items')
+          .delete()
+          .eq('open_table_id', activeOpenTableId);
+
+        const finalTableItems = cart.map(item => ({
+          open_table_id: activeOpenTableId,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          cost_price: item.cost_price,
+          discount_percent: item.discount_percent,
+          discount_amount: item.discount_amount,
+          tax_percent: item.tax_percent,
+          tax_amount: item.tax_amount,
+          total: item.total,
+        }));
+
+        if (finalTableItems.length > 0) {
+          await supabase
+            .from('pos_open_table_items')
+            .insert(finalTableItems);
+        }
+
+        await supabase
           .from('pos_open_tables')
-          .update({ status: 'closed', closed_at: new Date().toISOString() })
+          .update({
+            status: 'closed',
+            closed_at: new Date().toISOString(),
+            customer_name: customerName || null,
+            customer_phone: customerPhone || null,
+            subtotal,
+            tax_amount: totalTax,
+            discount_amount: totalDiscount,
+            total_amount: grandTotal,
+            total_cogs: totalCogs,
+          })
           .eq('id', activeOpenTableId);
         clearActiveOpenTable();
       }
@@ -1440,9 +1546,20 @@ const POSDashboard = () => {
                 <Button variant="outline" onClick={holdTransaction} disabled={cart.length === 0}>
                   <Pause className="h-4 w-4" />
                 </Button>
+                {activeOpenTableId && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => saveCartToOpenTable(true)}
+                    disabled={cart.length === 0 || isSavingOpenTable}
+                    className="flex-1"
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Tambah ke Meja {activeOpenTableName}
+                  </Button>
+                )}
                 <Button className="flex-1" size="lg" onClick={openPaymentDialog} disabled={cart.length === 0}>
                   <Receipt className="mr-2 h-5 w-5" />
-                  Bayar
+                  {activeOpenTableId ? 'Bayar & Tutup Meja' : 'Bayar'}
                 </Button>
               </div>
             </div>
@@ -1697,9 +1814,20 @@ const POSDashboard = () => {
                     <Button variant="outline" onClick={holdTransaction}>
                       <Pause className="h-4 w-4" />
                     </Button>
+                    {activeOpenTableId && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => saveCartToOpenTable(true)}
+                        disabled={isSavingOpenTable}
+                        className="flex-1"
+                      >
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        Tambah ke Meja {activeOpenTableName}
+                      </Button>
+                    )}
                     <Button className="flex-1" size="lg" onClick={openPaymentDialog}>
                       <Receipt className="mr-2 h-5 w-5" />
-                      Bayar
+                      {activeOpenTableId ? 'Bayar & Tutup Meja' : 'Bayar'}
                     </Button>
                   </div>
                 </>

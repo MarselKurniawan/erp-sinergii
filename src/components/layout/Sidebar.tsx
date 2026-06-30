@@ -24,6 +24,7 @@ import {
   Wallet,
   TrendingUp,
   Banknote,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -189,6 +190,7 @@ const menuItems: MenuItem[] = [
   { icon: Landmark, label: 'Fixed Assets', path: '/assets', feature: 'assets' },
   { icon: Factory, label: 'Production Order', path: '/manufacturing/production', feature: 'manufacturing/production' },
   { icon: Banknote, label: 'Bank Reconciliation', path: '/banking/reconciliation', feature: 'banking/reconciliation' },
+  { icon: ShieldCheck, label: 'Approval Center', path: '/approvals', feature: 'approvals' },
   { icon: Building2, label: 'Executive Dashboard', path: '/executive-dashboard', feature: 'executive-dashboard' },
   {
     icon: Lock, label: 'Accounting',
