@@ -4893,6 +4893,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      apply_payment_allocations_after_approval: {
+        Args: { _payment_id: string }
+        Returns: undefined
+      }
       approval_document_link: {
         Args: { _entity_type: string }
         Returns: string
