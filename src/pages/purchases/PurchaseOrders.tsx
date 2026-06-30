@@ -735,6 +735,15 @@ export const PurchaseOrders: React.FC = () => {
                   </span>
                 </div>
                 <div>
+                  <p className="text-sm text-muted-foreground">Approval</p>
+                  <span className={cn('badge-status capitalize', getStatusBadgeClass(viewingOrder.approval_status || 'pending'))}>
+                    {viewingOrder.approval_status || 'pending'}
+                  </span>
+                  {viewingOrder.rejection_reason && (
+                    <p className="mt-1 text-xs text-destructive">{viewingOrder.rejection_reason}</p>
+                  )}
+                </div>
+                <div>
                   <p className="text-sm text-muted-foreground">Supplier</p>
                   <p className="font-medium">{viewingOrder.suppliers?.name}</p>
                 </div>
