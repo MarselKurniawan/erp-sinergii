@@ -134,6 +134,7 @@ const POSDashboard = () => {
   const [activeOpenTableName, setActiveOpenTableName] = useState<string>('');
   const [showOpenTablePicker, setShowOpenTablePicker] = useState(false);
   const [openTablesList, setOpenTablesList] = useState<any[]>([]);
+  const [isSavingOpenTable, setIsSavingOpenTable] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Payment methods
@@ -450,6 +451,64 @@ const POSDashboard = () => {
   const clearActiveOpenTable = () => {
     setActiveOpenTableId(null);
     setActiveOpenTableName('');
+  };
+
+  const saveCartToOpenTable = async () => {
+    if (!selectedCompany || !activeOpenTableId) return;
+    if (cart.length === 0) {
+      toast.error('Keranjang meja masih kosong');
+      return;
+    }
+
+    setIsSavingOpenTable(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from('pos_open_table_items')
+        .delete()
+        .eq('open_table_id', activeOpenTableId);
+
+      if (deleteError) throw deleteError;
+
+      const tableItems = cart.map(item => ({
+        open_table_id: activeOpenTableId,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        cost_price: item.cost_price,
+        discount_percent: item.discount_percent,
+        discount_amount: item.discount_amount,
+        tax_percent: item.tax_percent,
+        tax_amount: item.tax_amount,
+        total: item.total,
+      }));
+
+      const { error: insertError } = await supabase
+        .from('pos_open_table_items')
+        .insert(tableItems);
+
+      if (insertError) throw insertError;
+
+      const { error: tableError } = await supabase
+        .from('pos_open_tables')
+        .update({
+          customer_name: customerName || null,
+          customer_phone: customerPhone || null,
+          subtotal,
+          tax_amount: totalTax,
+          discount_amount: totalDiscount,
+          total_amount: grandTotal,
+          total_cogs: totalCogs,
+        })
+        .eq('id', activeOpenTableId);
+
+      if (tableError) throw tableError;
+
+      toast.success(`Pesanan disimpan ke ${activeOpenTableName}`);
+    } catch (error: any) {
+      toast.error('Gagal menyimpan meja: ' + error.message);
+    } finally {
+      setIsSavingOpenTable(false);
+    }
   };
 
   // Auto-load from URL ?openTableId=
@@ -897,11 +956,45 @@ const POSDashboard = () => {
         promoDiscount: promoDiscount
       });
 
-      // Close linked open table after successful payment
+      // Sync final cart and close linked open table after successful payment
       if (activeOpenTableId) {
         await supabase
+          .from('pos_open_table_items')
+          .delete()
+          .eq('open_table_id', activeOpenTableId);
+
+        const finalTableItems = cart.map(item => ({
+          open_table_id: activeOpenTableId,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          cost_price: item.cost_price,
+          discount_percent: item.discount_percent,
+          discount_amount: item.discount_amount,
+          tax_percent: item.tax_percent,
+          tax_amount: item.tax_amount,
+          total: item.total,
+        }));
+
+        if (finalTableItems.length > 0) {
+          await supabase
+            .from('pos_open_table_items')
+            .insert(finalTableItems);
+        }
+
+        await supabase
           .from('pos_open_tables')
-          .update({ status: 'closed', closed_at: new Date().toISOString() })
+          .update({
+            status: 'closed',
+            closed_at: new Date().toISOString(),
+            customer_name: customerName || null,
+            customer_phone: customerPhone || null,
+            subtotal,
+            tax_amount: totalTax,
+            discount_amount: totalDiscount,
+            total_amount: grandTotal,
+            total_cogs: totalCogs,
+          })
           .eq('id', activeOpenTableId);
         clearActiveOpenTable();
       }
