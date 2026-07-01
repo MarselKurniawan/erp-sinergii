@@ -805,9 +805,11 @@ export type Database = {
           email: string | null
           id: string
           name: string
+          notes: string | null
           phone: string | null
           receivable_account_id: string | null
           tax_account_id: string | null
+          tax_number: string | null
           updated_at: string
         }
         Insert: {
@@ -819,9 +821,11 @@ export type Database = {
           email?: string | null
           id?: string
           name: string
+          notes?: string | null
           phone?: string | null
           receivable_account_id?: string | null
           tax_account_id?: string | null
+          tax_number?: string | null
           updated_at?: string
         }
         Update: {
@@ -833,9 +837,11 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
+          notes?: string | null
           phone?: string | null
           receivable_account_id?: string | null
           tax_account_id?: string | null
+          tax_number?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -4588,9 +4594,11 @@ export type Database = {
           expense_account_id: string | null
           id: string
           name: string
+          notes: string | null
           payable_account_id: string | null
           phone: string | null
           tax_account_id: string | null
+          tax_number: string | null
           updated_at: string
         }
         Insert: {
@@ -4602,9 +4610,11 @@ export type Database = {
           expense_account_id?: string | null
           id?: string
           name: string
+          notes?: string | null
           payable_account_id?: string | null
           phone?: string | null
           tax_account_id?: string | null
+          tax_number?: string | null
           updated_at?: string
         }
         Update: {
@@ -4616,9 +4626,11 @@ export type Database = {
           expense_account_id?: string | null
           id?: string
           name?: string
+          notes?: string | null
           payable_account_id?: string | null
           phone?: string | null
           tax_account_id?: string | null
+          tax_number?: string | null
           updated_at?: string
         }
         Relationships: [
