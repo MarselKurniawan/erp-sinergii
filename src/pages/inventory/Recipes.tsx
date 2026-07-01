@@ -186,11 +186,13 @@ export default function Recipes() {
 
         toast.success('Recipe berhasil diupdate');
       } else {
+        const { generateCode } = await import('@/lib/autoCode');
+        const recipe_code = formData.recipe_code?.trim() || (await generateCode(selectedCompany.id, 'RCP'));
         const { data, error } = await supabase
           .from('recipes')
           .insert({
             company_id: selectedCompany.id,
-            recipe_code: formData.recipe_code,
+            recipe_code,
             name: formData.name,
             description: formData.description || null,
             product_id: formData.product_id,
