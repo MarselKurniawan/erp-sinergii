@@ -1,0 +1,2 @@
+ALTER TABLE public.pos_transactions ADD COLUMN IF NOT EXISTS open_table_id uuid REFERENCES public.pos_open_tables(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_pos_transactions_open_table ON public.pos_transactions(open_table_id);

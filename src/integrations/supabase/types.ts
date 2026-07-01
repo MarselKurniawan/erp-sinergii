@@ -2778,6 +2778,7 @@ export type Database = {
           id: string
           invoice_number: string | null
           notes: string | null
+          open_table_id: string | null
           revenue_account_id: string | null
           rounding_amount: number | null
           service_amount: number | null
@@ -2808,6 +2809,7 @@ export type Database = {
           id?: string
           invoice_number?: string | null
           notes?: string | null
+          open_table_id?: string | null
           revenue_account_id?: string | null
           rounding_amount?: number | null
           service_amount?: number | null
@@ -2838,6 +2840,7 @@ export type Database = {
           id?: string
           invoice_number?: string | null
           notes?: string | null
+          open_table_id?: string | null
           revenue_account_id?: string | null
           rounding_amount?: number | null
           service_amount?: number | null
@@ -2879,6 +2882,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_transactions_open_table_id_fkey"
+            columns: ["open_table_id"]
+            isOneToOne: false
+            referencedRelation: "pos_open_tables"
             referencedColumns: ["id"]
           },
           {
