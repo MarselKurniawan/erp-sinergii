@@ -331,25 +331,17 @@ export default function Recipes() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Kode Recipe *</Label>
-                  <Input
-                    value={formData.recipe_code}
-                    onChange={(e) => setFormData({ ...formData, recipe_code: e.target.value })}
-                    placeholder="RCP-001"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nama Recipe *</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Nama recipe"
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Nama Recipe *</Label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Nama recipe"
+                  required
+                />
+                {editingRecipe && (
+                  <p className="text-xs text-muted-foreground">Kode: <span className="font-mono">{formData.recipe_code || '(otomatis)'}</span></p>
+                )}
               </div>
 
               <div className="space-y-2">
