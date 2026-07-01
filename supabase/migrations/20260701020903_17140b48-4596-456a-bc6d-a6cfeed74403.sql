@@ -1,0 +1,2 @@
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS notes text, ADD COLUMN IF NOT EXISTS tax_number text;
+ALTER TABLE public.suppliers ADD COLUMN IF NOT EXISTS notes text, ADD COLUMN IF NOT EXISTS tax_number text;

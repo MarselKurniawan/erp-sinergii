@@ -186,11 +186,13 @@ export default function Recipes() {
 
         toast.success('Recipe berhasil diupdate');
       } else {
+        const { generateCode } = await import('@/lib/autoCode');
+        const recipe_code = formData.recipe_code?.trim() || (await generateCode(selectedCompany.id, 'RCP'));
         const { data, error } = await supabase
           .from('recipes')
           .insert({
             company_id: selectedCompany.id,
-            recipe_code: formData.recipe_code,
+            recipe_code,
             name: formData.name,
             description: formData.description || null,
             product_id: formData.product_id,
@@ -331,25 +333,17 @@ export default function Recipes() {
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Kode Recipe *</Label>
-                  <Input
-                    value={formData.recipe_code}
-                    onChange={(e) => setFormData({ ...formData, recipe_code: e.target.value })}
-                    placeholder="RCP-001"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nama Recipe *</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Nama recipe"
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Nama Recipe *</Label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Nama recipe"
+                  required
+                />
+                {editingRecipe && (
+                  <p className="text-xs text-muted-foreground">Kode: <span className="font-mono">{formData.recipe_code || '(otomatis)'}</span></p>
+                )}
               </div>
 
               <div className="space-y-2">
