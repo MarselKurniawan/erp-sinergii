@@ -564,25 +564,17 @@ export const Products: React.FC = () => {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="form-label">SKU <span className="text-xs text-muted-foreground">(otomatis jika kosong)</span></label>
-                    <Input
-                      value={formData.sku}
-                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                      placeholder="Otomatis: PRD-YYYYMM-XXXX"
-                      className="input-field"
-                    />
-                  </div>
-                  <div>
-                    <label className="form-label">Product Type</label>
-                    <SearchableSelect
-                      options={productTypeOptions}
-                      value={formData.product_type}
-                      onChange={(value) => setFormData({ ...formData, product_type: value as 'stockable' | 'service' | 'raw_material' })}
-                      placeholder="Select type"
-                    />
-                  </div>
+                <div>
+                  <label className="form-label">Product Type</label>
+                  <SearchableSelect
+                    options={productTypeOptions}
+                    value={formData.product_type}
+                    onChange={(value) => setFormData({ ...formData, product_type: value as 'stockable' | 'service' | 'raw_material' })}
+                    placeholder="Select type"
+                  />
+                  {editingProduct && (
+                    <p className="text-xs text-muted-foreground mt-1">SKU: <span className="font-mono">{formData.sku || '(otomatis)'}</span></p>
+                  )}
                 </div>
                 
                 <div>
