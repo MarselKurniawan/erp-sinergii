@@ -1752,6 +1752,7 @@ export type Database = {
           reference_type: string | null
           source_id: string | null
           source_type: string | null
+          status: string | null
           void_reason: string | null
           voided_at: string | null
           voided_by: string | null
@@ -1769,6 +1770,7 @@ export type Database = {
           reference_type?: string | null
           source_id?: string | null
           source_type?: string | null
+          status?: string | null
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
@@ -1786,6 +1788,7 @@ export type Database = {
           reference_type?: string | null
           source_id?: string | null
           source_type?: string | null
+          status?: string | null
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
@@ -5020,6 +5023,7 @@ export type Database = {
         | "paid"
         | "overdue"
         | "cancelled"
+        | "pending"
       opname_status: "draft" | "in_progress" | "completed"
       order_status:
         | "draft"
@@ -5183,6 +5187,7 @@ export const Constants = {
         "paid",
         "overdue",
         "cancelled",
+        "pending",
       ],
       opname_status: ["draft", "in_progress", "completed"],
       order_status: [
