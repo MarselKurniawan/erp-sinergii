@@ -126,7 +126,7 @@ const Expenses: React.FC = () => {
       const { error: lineErr } = await supabase.from('journal_entry_lines').insert(lines);
       if (lineErr) throw lineErr;
 
-      const { error } = await supabase.from('expenses').insert({
+      const { data: inserted, error } = await supabase.from('expenses').insert({
         company_id: selectedCompany.id,
         expense_number,
         expense_date: form.expense_date,
@@ -140,17 +140,22 @@ const Expenses: React.FC = () => {
         notes: form.notes || null,
         journal_entry_id: je.id,
         created_by: user.id,
-      });
+      }).select('id').single();
       if (error) throw error;
-      toast.success('Expense tersimpan');
-      setForm(empty);
-      setOpen(false);
+      toast.success('Expense tersimpan — kamu bisa upload lampiran di bawah (opsional)');
+      setSavedExpenseId(inserted.id);
       fetchRows();
     } catch (e: any) {
       toast.error(e.message || 'Gagal menyimpan');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const closeDialog = () => {
+    setOpen(false);
+    setSavedExpenseId(null);
+    setForm(empty);
   };
 
   const filtered = rows.filter(r =>
