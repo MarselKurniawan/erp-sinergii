@@ -40,14 +40,15 @@ interface Company {
   created_at: string;
 }
 
+const DEFAULT_BUSINESS_TYPE: BusinessType = 'trading';
+const DEFAULT_COSTING: 'fifo' | 'average' = 'average';
+
 const initialFormData = {
   name: '',
   code: '',
   address: '',
   phone: '',
   email: '',
-  business_type: 'trading' as BusinessType,
-  costing_method: 'average' as 'fifo' | 'average',
 };
 
 const businessTypeIcons: Record<BusinessType, React.ReactNode> = {
@@ -122,8 +123,6 @@ const Companies: React.FC = () => {
       address: company.address || '',
       phone: company.phone || '',
       email: company.email || '',
-      business_type: company.business_type || 'trading',
-      costing_method: (company.costing_method as any) || 'average',
     });
     setDialogOpen(true);
   };
@@ -272,7 +271,6 @@ const Companies: React.FC = () => {
 
     try {
       if (selectedCompany) {
-        // Update - don't change business_type for existing companies
         const { error } = await supabase
           .from('companies')
           .update({
@@ -281,14 +279,12 @@ const Companies: React.FC = () => {
             address: formData.address.trim() || null,
             phone: formData.phone.trim() || null,
             email: formData.email.trim() || null,
-            costing_method: formData.costing_method,
           })
           .eq('id', selectedCompany.id);
 
         if (error) throw error;
         toast.success('Company updated successfully');
       } else {
-        // Create new company
         const { data: newCompany, error } = await supabase
           .from('companies')
           .insert({
@@ -297,20 +293,19 @@ const Companies: React.FC = () => {
             address: formData.address.trim() || null,
             phone: formData.phone.trim() || null,
             email: formData.email.trim() || null,
-            business_type: formData.business_type,
-            costing_method: formData.costing_method,
+            business_type: DEFAULT_BUSINESS_TYPE,
+            costing_method: DEFAULT_COSTING,
           })
           .select()
           .single();
 
         if (error) throw error;
 
-        // Generate default COA for the new company
         toast.loading('Membuat Chart of Accounts default...', { id: 'coa-generation' });
-        await generateDefaultCOA(newCompany.id, formData.business_type);
+        await generateDefaultCOA(newCompany.id, DEFAULT_BUSINESS_TYPE);
         toast.dismiss('coa-generation');
-        
-        toast.success(`Company created with ${businessTypeLabels[formData.business_type].label} COA template`);
+
+        toast.success('Company berhasil dibuat dengan Chart of Accounts default');
       }
 
       setDialogOpen(false);
@@ -606,29 +601,8 @@ const Companies: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Metode Costing Inventory</Label>
-              <RadioGroup
-                value={formData.costing_method}
-                onValueChange={(v) => setFormData({ ...formData, costing_method: v as 'fifo' | 'average' })}
-                className="grid grid-cols-2 gap-3"
-              >
-                <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${formData.costing_method === 'average' ? 'border-primary bg-primary/5' : ''}`}>
-                  <RadioGroupItem value="average" className="mt-0.5" />
-                  <div>
-                    <div className="font-medium text-sm">Rata-rata (WAC)</div>
-                    <div className="text-xs text-muted-foreground">Weighted Average Cost. Cocok untuk barang sejenis dengan harga stabil.</div>
-                  </div>
-                </label>
-                <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${formData.costing_method === 'fifo' ? 'border-primary bg-primary/5' : ''}`}>
-                  <RadioGroupItem value="fifo" className="mt-0.5" />
-                  <div>
-                    <div className="font-medium text-sm">FIFO</div>
-                    <div className="text-xs text-muted-foreground">First In First Out. Akurat untuk barang dengan fluktuasi harga.</div>
-                  </div>
-                </label>
-              </RadioGroup>
-            </div>
+
+
 
             {!selectedCompany && (
               <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">

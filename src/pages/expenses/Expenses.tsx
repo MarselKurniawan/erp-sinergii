@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Receipt } from 'lucide-react';
+import { Plus, Search, Receipt, Paperclip } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { generateDocumentNumber } from '@/lib/documentNumber';
+import { AttachmentList } from '@/components/AttachmentList';
+import { expenseSchema, firstZodError } from '@/lib/validation/schemas';
 
 interface ExpenseRow {
   id: string;
@@ -54,6 +56,7 @@ const Expenses: React.FC = () => {
     notes: '',
   };
   const [form, setForm] = useState(empty);
+  const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
 
   const fetchRows = async () => {
     if (!selectedCompany) return;
@@ -81,8 +84,18 @@ const Expenses: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!selectedCompany || !user) return;
-    if (!form.expense_account_id || !form.payment_account_id || !form.amount) {
-      toast.error('Lengkapi akun beban, akun bayar, dan jumlah');
+    const parsed = expenseSchema.safeParse({
+      expense_date: form.expense_date,
+      expense_account_id: form.expense_account_id,
+      payment_account_id: form.payment_account_id,
+      amount: form.amount,
+      tax_amount: form.tax_amount || 0,
+      supplier_id: form.supplier_id || undefined,
+      reference_no: form.reference_no,
+      notes: form.notes,
+    });
+    if (!parsed.success) {
+      toast.error(firstZodError(parsed.error));
       return;
     }
     setSubmitting(true);
@@ -113,7 +126,7 @@ const Expenses: React.FC = () => {
       const { error: lineErr } = await supabase.from('journal_entry_lines').insert(lines);
       if (lineErr) throw lineErr;
 
-      const { error } = await supabase.from('expenses').insert({
+      const { data: inserted, error } = await supabase.from('expenses').insert({
         company_id: selectedCompany.id,
         expense_number,
         expense_date: form.expense_date,
@@ -127,17 +140,22 @@ const Expenses: React.FC = () => {
         notes: form.notes || null,
         journal_entry_id: je.id,
         created_by: user.id,
-      });
+      }).select('id').single();
       if (error) throw error;
-      toast.success('Expense tersimpan');
-      setForm(empty);
-      setOpen(false);
+      toast.success('Expense tersimpan — kamu bisa upload lampiran di bawah (opsional)');
+      setSavedExpenseId(inserted.id);
       fetchRows();
     } catch (e: any) {
       toast.error(e.message || 'Gagal menyimpan');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const closeDialog = () => {
+    setOpen(false);
+    setSavedExpenseId(null);
+    setForm(empty);
   };
 
   const filtered = rows.filter(r =>
@@ -199,18 +217,18 @@ const Expenses: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(o) => { if (!o) closeDialog(); else setOpen(true); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>New Expense</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{savedExpenseId ? 'Expense Tersimpan — Lampiran' : 'New Expense'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Tanggal</label>
-                <Input type="date" value={form.expense_date} onChange={e => setForm({ ...form, expense_date: e.target.value })} />
+                <Input type="date" disabled={!!savedExpenseId} value={form.expense_date} onChange={e => setForm({ ...form, expense_date: e.target.value })} />
               </div>
               <div>
                 <label className="text-sm font-medium">No. Referensi</label>
-                <Input value={form.reference_no} onChange={e => setForm({ ...form, reference_no: e.target.value })} placeholder="opsional" />
+                <Input disabled={!!savedExpenseId} value={form.reference_no} onChange={e => setForm({ ...form, reference_no: e.target.value })} placeholder="opsional" />
               </div>
               <div>
                 <label className="text-sm font-medium">Akun Beban *</label>
@@ -229,11 +247,11 @@ const Expenses: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm font-medium">Jumlah (DPP) *</label>
-                <Input type="number" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+                <Input type="number" disabled={!!savedExpenseId} value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
               </div>
               <div>
                 <label className="text-sm font-medium">Pajak</label>
-                <Input type="number" value={form.tax_amount} onChange={e => setForm({ ...form, tax_amount: e.target.value })} />
+                <Input type="number" disabled={!!savedExpenseId} value={form.tax_amount} onChange={e => setForm({ ...form, tax_amount: e.target.value })} />
               </div>
               <div>
                 <label className="text-sm font-medium">Total</label>
@@ -242,11 +260,23 @@ const Expenses: React.FC = () => {
             </div>
             <div>
               <label className="text-sm font-medium">Keterangan</label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+              <Textarea disabled={!!savedExpenseId} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
             </div>
+
+            {savedExpenseId && (
+              <div className="border-t pt-4">
+                <div className="flex items-center gap-2 text-sm font-semibold mb-2">
+                  <Paperclip className="w-4 h-4" /> Lampiran (opsional — PDF, gambar, dll.)
+                </div>
+                <AttachmentList entityType="expense" entityId={savedExpenseId} />
+              </div>
+            )}
+
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>Batal</Button>
-              <Button onClick={handleSubmit} disabled={submitting}>{submitting ? 'Menyimpan…' : 'Simpan'}</Button>
+              <Button variant="outline" onClick={closeDialog}>{savedExpenseId ? 'Selesai' : 'Batal'}</Button>
+              {!savedExpenseId && (
+                <Button onClick={handleSubmit} disabled={submitting}>{submitting ? 'Menyimpan…' : 'Simpan'}</Button>
+              )}
             </div>
           </div>
         </DialogContent>

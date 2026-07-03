@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, CreditCard, Building2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
@@ -81,6 +82,10 @@ export const PurchasePayments: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [sp, setSp] = useSearchParams();
+  useEffect(() => {
+    if (sp.get('new') === '1') { setIsDialogOpen(true); sp.delete('new'); setSp(sp, { replace: true }); }
+  }, [sp]);
 
   const [formData, setFormData] = useState({
     supplier_id: '',
