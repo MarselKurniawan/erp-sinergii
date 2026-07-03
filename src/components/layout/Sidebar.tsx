@@ -74,11 +74,13 @@ const menuItems: MenuItem[] = [
   {
     icon: CreditCard, label: 'Payment & Cash/Bank',
     children: [
-      { label: 'New Payment', path: '/sales/payments?new=1', feature: 'sales/payments' },
-      { label: 'Payment List', path: '/sales/payments', feature: 'sales/payments' },
+      { label: '➕ Terima Pembayaran (Penerimaan)', path: '/sales/payments?new=1', feature: 'sales/payments' },
+      { label: 'Daftar Penerimaan', path: '/sales/payments', feature: 'sales/payments' },
+      { label: '➖ Bayar Supplier (Pengeluaran)', path: '/purchases/payments?new=1', feature: 'purchases/payments' },
+      { label: 'Daftar Pengeluaran', path: '/purchases/payments', feature: 'purchases/payments' },
       { label: 'New Cash/Bank Transfer', path: '/cash-bank/transfers/new', feature: 'cash-bank/transfers' },
       { label: 'Cash/Bank Transfer List', path: '/cash-bank/transfers', feature: 'cash-bank/transfers' },
-      { label: 'Show Cash/Bank Balance', path: '/cash-bank', feature: 'cash-bank' },
+      { label: 'Saldo Kas/Bank', path: '/cash-bank', feature: 'cash-bank' },
       { label: 'Fix Payment Mapping Issues', path: '/cash-bank/fix-mapping', feature: 'cash-bank/fix-mapping' },
     ],
   },
