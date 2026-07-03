@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 217 71% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 217 71% 25%;
+
+    --muted: 214 32% 91%;
+    --muted-foreground: 217 33% 40%;
+
+    --accent: 217 71% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 71% 35%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 217 71% 15%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 217 71% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 71% 22%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 217 71% 22%;
+    --sidebar-ring: 217 71% 35%;
+    --sidebar-muted: 217 33% 50%;
+
+    /* Custom ERP tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(217 71% 35%) 0%, hsl(217 71% 50%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(217 71% 15%) 0%, hsl(217 71% 10%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    
+    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1), 0 2px 4px -2px hsl(222 47% 11% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
+    --shadow-glow: 0 0 20px hsl(217 71% 35% / 0.3);
+
+    --font-heading: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 71% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 71% 18%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 71% 18%;
+    --muted-foreground: 217 30% 65%;
+
+    --accent: 217 71% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 40%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 217 71% 22%;
+    --input: 217 71% 22%;
+    --ring: 217 71% 45%;
+
+    --sidebar-background: 217 71% 10%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 217 71% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 71% 15%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 217 71% 15%;
+    --sidebar-muted: 217 30% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(217 71% 45%) 0%, hsl(217 71% 60%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(217 71% 10%) 0%, hsl(217 71% 6%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 13%) 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-sidebar {
+    background: var(--gradient-sidebar);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .transition-fast {
+    transition: all var(--transition-fast);
+  }
+
+  .transition-normal {
+    transition: all var(--transition-normal);
+  }
+
+  .glass-effect {
+    @apply bg-card/80 backdrop-blur-sm;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent gradient-primary;
+  }
+
+  /* Custom scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply p-6 rounded-xl bg-card border border-border shadow-sm transition-normal hover:shadow-md;
+  }
+
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 text-left font-medium text-muted-foreground bg-muted/50 first:rounded-tl-lg last:rounded-tr-lg;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 border-b border-border;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/80 transition-fast hover:bg-sidebar-accent hover:text-sidebar-foreground;
+  }
+
+  .sidebar-item.active {
+    @apply bg-sidebar-primary text-sidebar-primary-foreground shadow-glow;
+  }
+
+  .form-label {
+    @apply text-sm font-medium text-foreground mb-1.5 block;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground transition-fast focus:ring-2 focus:ring-ring focus:border-transparent outline-none;
+  }
+
+  .badge-status {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-draft {
+    @apply badge-status bg-muted text-muted-foreground;
+  }
+
+  .badge-confirmed {
+    @apply badge-status bg-primary/10 text-primary;
+  }
+
+  .badge-paid {
+    @apply badge-status bg-success/10 text-success;
+  }
+
+  .badge-partial {
+    @apply badge-status bg-warning/10 text-warning;
+  }
+
+  .badge-overdue {
+    @apply badge-status bg-destructive/10 text-destructive;
+  }
+
+  .badge-cancelled {
+    @apply badge-status bg-muted text-muted-foreground line-through;
+  }
+}
