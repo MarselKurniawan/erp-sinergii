@@ -56,6 +56,7 @@ const Expenses: React.FC = () => {
     notes: '',
   };
   const [form, setForm] = useState(empty);
+  const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
 
   const fetchRows = async () => {
     if (!selectedCompany) return;
@@ -83,8 +84,18 @@ const Expenses: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!selectedCompany || !user) return;
-    if (!form.expense_account_id || !form.payment_account_id || !form.amount) {
-      toast.error('Lengkapi akun beban, akun bayar, dan jumlah');
+    const parsed = expenseSchema.safeParse({
+      expense_date: form.expense_date,
+      expense_account_id: form.expense_account_id,
+      payment_account_id: form.payment_account_id,
+      amount: form.amount,
+      tax_amount: form.tax_amount || 0,
+      supplier_id: form.supplier_id || undefined,
+      reference_no: form.reference_no,
+      notes: form.notes,
+    });
+    if (!parsed.success) {
+      toast.error(firstZodError(parsed.error));
       return;
     }
     setSubmitting(true);
