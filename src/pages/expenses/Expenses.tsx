@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Receipt } from 'lucide-react';
+import { Plus, Search, Receipt, Paperclip } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { generateDocumentNumber } from '@/lib/documentNumber';
+import { AttachmentList } from '@/components/AttachmentList';
+import { expenseSchema, firstZodError } from '@/lib/validation/schemas';
 
 interface ExpenseRow {
   id: string;
