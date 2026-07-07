@@ -167,7 +167,7 @@ const Currencies: React.FC = () => {
           <div className="w-64">
             <SearchableSelect
               value={base}
-              onValueChange={handleChangeBase}
+              onChange={handleChangeBase}
               disabled={savingBase || !selectedCompany}
               options={currencies.map((c) => ({
                 value: c.code,
@@ -293,7 +293,7 @@ const Currencies: React.FC = () => {
               <Label>Mata Uang</Label>
               <SearchableSelect
                 value={form.currency_code}
-                onValueChange={(v) => setForm({ ...form, currency_code: v })}
+                onChange={(v) => setForm({ ...form, currency_code: v })}
                 options={currencies
                   .filter((c) => c.code !== base)
                   .map((c) => ({

@@ -84,7 +84,7 @@ export const CurrencyRateField: React.FC<Props> = ({
         <Label className="text-xs">Mata Uang</Label>
         <SearchableSelect
           value={currency || 'IDR'}
-          onValueChange={handleCurrencyChange}
+          onChange={handleCurrencyChange}
           disabled={disabled}
           options={currencies.map((c) => ({
             value: c.code,
