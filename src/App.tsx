@@ -121,6 +121,7 @@ import AccountMapping from "./pages/settings/AccountMapping";
 import ExpenseCategories from "./pages/expenses/ExpenseCategories";
 import RecurringTemplates from "./pages/recurring/RecurringTemplates";
 import SystemHealthCheck from "./pages/settings/SystemHealthCheck";
+import Currencies from "./pages/settings/Currencies";
 import ApprovalCenter from "./pages/approvals/ApprovalCenter";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
@@ -204,6 +205,7 @@ const App = () => (
                 <Route path="/reports/tax" element={<Guard f="reports/tax"><TaxReport /></Guard>} />
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />
+                <Route path="/settings/currencies" element={<Currencies />} />
                 <Route path="/settings/permissions" element={<Permissions />} />
                 <Route path="/settings/profile" element={<Profile />} />
                 {/* Sale group */}
