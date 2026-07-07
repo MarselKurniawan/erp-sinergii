@@ -219,6 +219,7 @@ const menuItems: MenuItem[] = [
       { label: 'Manage Fields in Documents', path: '/settings/document-fields', feature: 'settings/document-fields' },
       { label: 'Users', path: '/settings/users', feature: 'settings/users' },
       { label: 'Companies', path: '/settings/companies', feature: 'settings/companies' },
+      { label: 'Mata Uang & Kurs', path: '/settings/currencies', feature: 'settings/currencies' },
       { label: 'Permissions', path: '/settings/permissions', feature: 'settings/permissions' },
       { label: 'Log Activity', path: '/settings/activity-log', feature: 'settings/activity-log' },
     ],
