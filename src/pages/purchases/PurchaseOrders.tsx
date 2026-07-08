@@ -75,6 +75,8 @@ export const PurchaseOrders: React.FC = () => {
     order_date: new Date().toISOString().split('T')[0],
     due_date: '',
     notes: '',
+    currency_code: 'IDR',
+    exchange_rate: 1,
   });
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
