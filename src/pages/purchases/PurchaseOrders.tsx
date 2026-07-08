@@ -22,6 +22,7 @@ import { formatCurrency, formatDate, getStatusBadgeClass } from '@/lib/formatter
 import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { DownPaymentDialog } from '@/components/orders/DownPaymentDialog';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface PurchaseOrder {
