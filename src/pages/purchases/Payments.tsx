@@ -391,6 +391,15 @@ export const PurchasePayments: React.FC = () => {
                 </Card>
               )}
 
+              <div className="border rounded-lg p-3 bg-muted/30">
+                <CurrencyRateField
+                  currency={formData.currency_code}
+                  rate={formData.exchange_rate}
+                  date={formData.payment_date}
+                  onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Notes</label>
