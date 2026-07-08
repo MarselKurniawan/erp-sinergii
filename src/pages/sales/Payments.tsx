@@ -448,7 +448,6 @@ export const SalesPayments: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-6">
               <div className="border rounded-lg p-3 bg-muted/30">
                 <CurrencyRateField
                   currency={formData.currency_code}
