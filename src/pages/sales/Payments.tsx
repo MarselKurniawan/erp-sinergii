@@ -449,6 +449,16 @@ export const SalesPayments: React.FC = () => {
               )}
 
               <div className="grid grid-cols-2 gap-6">
+              <div className="border rounded-lg p-3 bg-muted/30">
+                <CurrencyRateField
+                  currency={formData.currency_code}
+                  rate={formData.exchange_rate}
+                  date={formData.payment_date}
+                  onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="form-label">Notes</label>
                   <Textarea
@@ -465,6 +475,7 @@ export const SalesPayments: React.FC = () => {
                   </div>
                 </div>
               </div>
+
 
               <div className="flex gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
