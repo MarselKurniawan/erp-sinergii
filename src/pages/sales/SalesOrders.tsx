@@ -23,6 +23,7 @@ import { formatCurrency, formatDate, getStatusBadgeClass } from '@/lib/formatter
 import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { DownPaymentDialog } from '@/components/orders/DownPaymentDialog';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 
 interface Customer {
   id: string;
