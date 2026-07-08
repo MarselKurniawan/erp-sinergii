@@ -30,6 +30,7 @@ import { formatCurrency, formatDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { generateDocumentNumber } from '@/lib/documentNumber';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 
 const getApprovalBadgeClass = (status: string) => {
   switch (status) {
