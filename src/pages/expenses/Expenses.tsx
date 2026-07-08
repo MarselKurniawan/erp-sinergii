@@ -55,6 +55,8 @@ const Expenses: React.FC = () => {
     tax_amount: '0',
     reference_no: '',
     notes: '',
+    currency_code: 'IDR',
+    exchange_rate: 1,
   };
   const [form, setForm] = useState(empty);
   const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
