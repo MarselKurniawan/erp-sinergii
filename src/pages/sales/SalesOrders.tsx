@@ -547,7 +547,16 @@ export const SalesOrders: React.FC = () => {
                     className="input-field"
                     required
                   />
-                </div>
+              </div>
+
+              <div className="border rounded-lg p-3 bg-muted/30">
+                <CurrencyRateField
+                  currency={formData.currency_code}
+                  rate={formData.exchange_rate}
+                  date={formData.order_date}
+                  onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
+                />
+              </div>
                 <div>
                   <label className="form-label">Due Date</label>
                   <Input
