@@ -244,6 +244,8 @@ export const PurchasePayments: React.FC = () => {
       payment_date: new Date().toISOString().split('T')[0],
       cash_account_id: '',
       notes: '',
+      currency_code: (selectedCompany as any)?.base_currency || 'IDR',
+      exchange_rate: 1,
     });
     setBillAllocations([]);
     setTotalPayment(0);
