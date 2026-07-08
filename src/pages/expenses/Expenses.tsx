@@ -258,6 +258,11 @@ const Expenses: React.FC = () => {
                 <label className="text-sm font-medium">Pajak</label>
                 <Input type="number" disabled={!!savedExpenseId} value={form.tax_amount} onChange={e => setForm({ ...form, tax_amount: e.target.value })} />
               </div>
+              <div>
+                <label className="text-sm font-medium">Total</label>
+                <Input value={formatCurrency(total)} disabled />
+              </div>
+            </div>
             <div className="border rounded-lg p-3 bg-muted/30">
               <CurrencyRateField
                 currency={form.currency_code}
@@ -266,11 +271,6 @@ const Expenses: React.FC = () => {
                 disabled={!!savedExpenseId}
                 onChange={(c, r) => setForm({ ...form, currency_code: c, exchange_rate: r })}
               />
-            </div>
-            <div>
-                <label className="text-sm font-medium">Total</label>
-                <Input value={formatCurrency(total)} disabled />
-              </div>
             </div>
             <div>
               <label className="text-sm font-medium">Keterangan</label>
