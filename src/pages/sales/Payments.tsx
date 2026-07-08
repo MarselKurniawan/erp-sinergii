@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { generateDocumentNumber } from '@/lib/documentNumber';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 
 interface Customer {
   id: string;
