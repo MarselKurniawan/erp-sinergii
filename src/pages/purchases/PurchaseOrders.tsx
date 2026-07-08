@@ -407,6 +407,7 @@ export const PurchaseOrders: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                     className="input-field"
                   />
+                </div>
               </div>
 
               <div className="border rounded-lg p-3 bg-muted/30">
@@ -416,7 +417,6 @@ export const PurchaseOrders: React.FC = () => {
                   date={formData.order_date}
                   onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
                 />
-              </div>
               </div>
 
               <div>
