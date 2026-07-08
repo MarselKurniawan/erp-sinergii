@@ -141,9 +141,11 @@ const Expenses: React.FC = () => {
         total_amount: total,
         reference_no: form.reference_no || null,
         notes: form.notes || null,
+        currency_code: form.currency_code,
+        exchange_rate: form.exchange_rate,
         journal_entry_id: je.id,
         created_by: user.id,
-      }).select('id').single();
+      } as any).select('id').single();
       if (error) throw error;
       toast.success('Expense tersimpan — kamu bisa upload lampiran di bawah (opsional)');
       setSavedExpenseId(inserted.id);
