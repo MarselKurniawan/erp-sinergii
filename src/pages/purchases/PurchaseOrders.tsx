@@ -235,6 +235,8 @@ export const PurchaseOrders: React.FC = () => {
       order_date: new Date().toISOString().split('T')[0],
       due_date: '',
       notes: '',
+      currency_code: (selectedCompany as any)?.base_currency || 'IDR',
+      exchange_rate: 1,
     });
     setOrderItems([{ product_id: '', quantity: 1, unit_price: 0, discount_percent: 0, tax_percent: 11, total: 0 }]);
   };
