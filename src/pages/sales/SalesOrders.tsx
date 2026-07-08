@@ -210,8 +210,10 @@ export const SalesOrders: React.FC = () => {
         tax_amount: totals.taxAmount,
         total_amount: totals.total,
         notes: formData.notes || null,
+        currency_code: formData.currency_code,
+        exchange_rate: formData.exchange_rate,
         created_by: user.id,
-      })
+      } as any)
       .select()
       .single();
 
