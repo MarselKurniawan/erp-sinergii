@@ -18,6 +18,7 @@ import { formatCurrency, formatDate } from '@/lib/formatters';
 import { generateDocumentNumber } from '@/lib/documentNumber';
 import { AttachmentList } from '@/components/AttachmentList';
 import { expenseSchema, firstZodError } from '@/lib/validation/schemas';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 
 interface ExpenseRow {
   id: string;
