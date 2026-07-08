@@ -22,6 +22,7 @@ import { formatCurrency, formatDate, getStatusBadgeClass } from '@/lib/formatter
 import { cn } from '@/lib/utils';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { DownPaymentDialog } from '@/components/orders/DownPaymentDialog';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 import { generateDocumentNumber } from '@/lib/documentNumber';
 
 interface PurchaseOrder {
@@ -74,6 +75,8 @@ export const PurchaseOrders: React.FC = () => {
     order_date: new Date().toISOString().split('T')[0],
     due_date: '',
     notes: '',
+    currency_code: 'IDR',
+    exchange_rate: 1,
   });
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
@@ -192,8 +195,10 @@ export const PurchaseOrders: React.FC = () => {
         tax_amount: totals.taxAmount,
         total_amount: totals.total,
         notes: formData.notes || null,
+        currency_code: formData.currency_code,
+        exchange_rate: formData.exchange_rate,
         created_by: user.id,
-      })
+      } as any)
       .select()
       .single();
 
@@ -230,6 +235,8 @@ export const PurchaseOrders: React.FC = () => {
       order_date: new Date().toISOString().split('T')[0],
       due_date: '',
       notes: '',
+      currency_code: (selectedCompany as any)?.base_currency || 'IDR',
+      exchange_rate: 1,
     });
     setOrderItems([{ product_id: '', quantity: 1, unit_price: 0, discount_percent: 0, tax_percent: 11, total: 0 }]);
   };
@@ -401,6 +408,15 @@ export const PurchaseOrders: React.FC = () => {
                     className="input-field"
                   />
                 </div>
+              </div>
+
+              <div className="border rounded-lg p-3 bg-muted/30">
+                <CurrencyRateField
+                  currency={formData.currency_code}
+                  rate={formData.exchange_rate}
+                  date={formData.order_date}
+                  onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
+                />
               </div>
 
               <div>

@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { AccountValidationAlert } from '@/components/accounting/AccountValidationAlert';
 import { generateDocumentNumber } from '@/lib/documentNumber';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 
 interface Customer {
   id: string;
@@ -84,6 +85,8 @@ export const SalesPayments: React.FC = () => {
     payment_date: new Date().toISOString().split('T')[0],
     cash_account_id: '',
     notes: '',
+    currency_code: 'IDR',
+    exchange_rate: 1,
   });
 
   const [allocations, setAllocations] = useState<PaymentAllocation[]>([]);
@@ -196,8 +199,10 @@ export const SalesPayments: React.FC = () => {
         amount: totalPaymentAmount,
         cash_account_id: formData.cash_account_id || null,
         notes: formData.notes || null,
+        currency_code: formData.currency_code,
+        exchange_rate: formData.exchange_rate,
         created_by: user.id,
-      })
+      } as any)
       .select()
       .single();
 
@@ -300,6 +305,8 @@ export const SalesPayments: React.FC = () => {
       payment_date: new Date().toISOString().split('T')[0],
       cash_account_id: '',
       notes: '',
+      currency_code: (selectedCompany as any)?.base_currency || 'IDR',
+      exchange_rate: 1,
     });
     setAllocations([]);
     setCustomerInvoices([]);
@@ -441,6 +448,15 @@ export const SalesPayments: React.FC = () => {
                 </div>
               )}
 
+              <div className="border rounded-lg p-3 bg-muted/30">
+                <CurrencyRateField
+                  currency={formData.currency_code}
+                  rate={formData.exchange_rate}
+                  date={formData.payment_date}
+                  onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="form-label">Notes</label>
@@ -458,6 +474,7 @@ export const SalesPayments: React.FC = () => {
                   </div>
                 </div>
               </div>
+
 
               <div className="flex gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">

@@ -18,6 +18,7 @@ import { formatCurrency, formatDate } from '@/lib/formatters';
 import { generateDocumentNumber } from '@/lib/documentNumber';
 import { AttachmentList } from '@/components/AttachmentList';
 import { expenseSchema, firstZodError } from '@/lib/validation/schemas';
+import { CurrencyRateField } from '@/components/CurrencyRateField';
 
 interface ExpenseRow {
   id: string;
@@ -54,6 +55,8 @@ const Expenses: React.FC = () => {
     tax_amount: '0',
     reference_no: '',
     notes: '',
+    currency_code: 'IDR',
+    exchange_rate: 1,
   };
   const [form, setForm] = useState(empty);
   const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
@@ -138,9 +141,11 @@ const Expenses: React.FC = () => {
         total_amount: total,
         reference_no: form.reference_no || null,
         notes: form.notes || null,
+        currency_code: form.currency_code,
+        exchange_rate: form.exchange_rate,
         journal_entry_id: je.id,
         created_by: user.id,
-      }).select('id').single();
+      } as any).select('id').single();
       if (error) throw error;
       toast.success('Expense tersimpan — kamu bisa upload lampiran di bawah (opsional)');
       setSavedExpenseId(inserted.id);
@@ -257,6 +262,15 @@ const Expenses: React.FC = () => {
                 <label className="text-sm font-medium">Total</label>
                 <Input value={formatCurrency(total)} disabled />
               </div>
+            </div>
+            <div className="border rounded-lg p-3 bg-muted/30">
+              <CurrencyRateField
+                currency={form.currency_code}
+                rate={form.exchange_rate}
+                date={form.expense_date}
+                disabled={!!savedExpenseId}
+                onChange={(c, r) => setForm({ ...form, currency_code: c, exchange_rate: r })}
+              />
             </div>
             <div>
               <label className="text-sm font-medium">Keterangan</label>
