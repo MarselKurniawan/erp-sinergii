@@ -93,6 +93,8 @@ export const PurchasePayments: React.FC = () => {
     payment_date: new Date().toISOString().split('T')[0],
     cash_account_id: '',
     notes: '',
+    currency_code: 'IDR',
+    exchange_rate: 1,
   });
 
   const [billAllocations, setBillAllocations] = useState<BillAllocation[]>([]);
