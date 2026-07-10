@@ -207,6 +207,7 @@ const App = () => (
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />
                 <Route path="/settings/currencies" element={<Currencies />} />
+                <Route path="/settings/withholding-tax" element={<WithholdingTax />} />
                 <Route path="/settings/permissions" element={<Permissions />} />
                 <Route path="/settings/profile" element={<Profile />} />
                 {/* Sale group */}
