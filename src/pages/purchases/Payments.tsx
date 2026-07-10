@@ -217,6 +217,9 @@ export const PurchasePayments: React.FC = () => {
 
     const paymentNumber = await generatePaymentNumber();
 
+    const whtType = whtTypes.find((w) => w.id === formData.withholding_type_id);
+    const whtAmount = whtType ? Math.round(totalPayment * Number(whtType.rate) * 100) / 100 : 0;
+
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
@@ -230,6 +233,9 @@ export const PurchasePayments: React.FC = () => {
         notes: formData.notes || null,
         currency_code: formData.currency_code,
         exchange_rate: formData.exchange_rate,
+        withholding_type_id: whtType?.id || null,
+        withholding_amount: whtAmount,
+        withholding_account_id: whtType?.liability_account_id || null,
         created_by: user.id,
       } as any)
       .select()
