@@ -382,6 +382,7 @@ export type Database = {
           due_date: string
           exchange_rate: number
           id: string
+          net_payable: number | null
           notes: string | null
           outstanding_amount: number | null
           paid_amount: number | null
@@ -398,6 +399,9 @@ export type Database = {
           void_reason: string | null
           voided_at: string | null
           voided_by: string | null
+          withholding_amount: number | null
+          withholding_rate: number | null
+          withholding_type_id: string | null
         }
         Insert: {
           approval_requested_at?: string | null
@@ -413,6 +417,7 @@ export type Database = {
           due_date: string
           exchange_rate?: number
           id?: string
+          net_payable?: number | null
           notes?: string | null
           outstanding_amount?: number | null
           paid_amount?: number | null
@@ -429,6 +434,9 @@ export type Database = {
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
+          withholding_amount?: number | null
+          withholding_rate?: number | null
+          withholding_type_id?: string | null
         }
         Update: {
           approval_requested_at?: string | null
@@ -444,6 +452,7 @@ export type Database = {
           due_date?: string
           exchange_rate?: number
           id?: string
+          net_payable?: number | null
           notes?: string | null
           outstanding_amount?: number | null
           paid_amount?: number | null
@@ -460,6 +469,9 @@ export type Database = {
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
+          withholding_amount?: number | null
+          withholding_rate?: number | null
+          withholding_type_id?: string | null
         }
         Relationships: [
           {
@@ -488,6 +500,13 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bills_withholding_type_id_fkey"
+            columns: ["withholding_type_id"]
+            isOneToOne: false
+            referencedRelation: "withholding_tax_types"
             referencedColumns: ["id"]
           },
         ]
@@ -2212,6 +2231,9 @@ export type Database = {
           void_reason: string | null
           voided_at: string | null
           voided_by: string | null
+          withholding_account_id: string | null
+          withholding_amount: number | null
+          withholding_type_id: string | null
         }
         Insert: {
           amount: number
@@ -2238,6 +2260,9 @@ export type Database = {
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
+          withholding_account_id?: string | null
+          withholding_amount?: number | null
+          withholding_type_id?: string | null
         }
         Update: {
           amount?: number
@@ -2264,6 +2289,9 @@ export type Database = {
           void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
+          withholding_account_id?: string | null
+          withholding_amount?: number | null
+          withholding_type_id?: string | null
         }
         Relationships: [
           {
@@ -2299,6 +2327,20 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_withholding_account_id_fkey"
+            columns: ["withholding_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_withholding_type_id_fkey"
+            columns: ["withholding_type_id"]
+            isOneToOne: false
+            referencedRelation: "withholding_tax_types"
             referencedColumns: ["id"]
           },
         ]
@@ -5082,6 +5124,60 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withholding_tax_types: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          liability_account_id: string | null
+          name: string
+          notes: string | null
+          rate: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          liability_account_id?: string | null
+          name: string
+          notes?: string | null
+          rate?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          liability_account_id?: string | null
+          name?: string
+          notes?: string | null
+          rate?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withholding_tax_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withholding_tax_types_liability_account_id_fkey"
+            columns: ["liability_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
             referencedColumns: ["id"]
           },
         ]

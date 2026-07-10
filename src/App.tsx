@@ -122,6 +122,7 @@ import ExpenseCategories from "./pages/expenses/ExpenseCategories";
 import RecurringTemplates from "./pages/recurring/RecurringTemplates";
 import SystemHealthCheck from "./pages/settings/SystemHealthCheck";
 import Currencies from "./pages/settings/Currencies";
+import WithholdingTax from "./pages/settings/WithholdingTax";
 import ApprovalCenter from "./pages/approvals/ApprovalCenter";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
@@ -206,6 +207,7 @@ const App = () => (
                 <Route path="/settings/users" element={<Users />} />
                 <Route path="/settings/companies" element={<Companies />} />
                 <Route path="/settings/currencies" element={<Currencies />} />
+                <Route path="/settings/withholding-tax" element={<WithholdingTax />} />
                 <Route path="/settings/permissions" element={<Permissions />} />
                 <Route path="/settings/profile" element={<Profile />} />
                 {/* Sale group */}

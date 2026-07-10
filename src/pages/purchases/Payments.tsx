@@ -95,7 +95,22 @@ export const PurchasePayments: React.FC = () => {
     notes: '',
     currency_code: 'IDR',
     exchange_rate: 1,
+    withholding_type_id: '',
+    withholding_amount: 0,
   });
+
+  const [whtTypes, setWhtTypes] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!selectedCompany) return;
+    supabase
+      .from('withholding_tax_types' as any)
+      .select('*')
+      .eq('company_id', selectedCompany.id)
+      .eq('is_active', true)
+      .order('code')
+      .then(({ data }) => setWhtTypes((data as any) || []));
+  }, [selectedCompany?.id]);
 
   const [billAllocations, setBillAllocations] = useState<BillAllocation[]>([]);
   const [totalPayment, setTotalPayment] = useState(0);
@@ -202,6 +217,9 @@ export const PurchasePayments: React.FC = () => {
 
     const paymentNumber = await generatePaymentNumber();
 
+    const whtType = whtTypes.find((w) => w.id === formData.withholding_type_id);
+    const whtAmount = whtType ? Math.round(totalPayment * Number(whtType.rate) * 100) / 100 : 0;
+
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
@@ -215,6 +233,9 @@ export const PurchasePayments: React.FC = () => {
         notes: formData.notes || null,
         currency_code: formData.currency_code,
         exchange_rate: formData.exchange_rate,
+        withholding_type_id: whtType?.id || null,
+        withholding_amount: whtAmount,
+        withholding_account_id: whtType?.liability_account_id || null,
         created_by: user.id,
       } as any)
       .select()
@@ -248,6 +269,8 @@ export const PurchasePayments: React.FC = () => {
       notes: '',
       currency_code: (selectedCompany as any)?.base_currency || 'IDR',
       exchange_rate: 1,
+      withholding_type_id: '',
+      withholding_amount: 0,
     });
     setBillAllocations([]);
     setTotalPayment(0);
@@ -398,6 +421,37 @@ export const PurchasePayments: React.FC = () => {
                   date={formData.payment_date}
                   onChange={(c, r) => setFormData({ ...formData, currency_code: c, exchange_rate: r })}
                 />
+              </div>
+
+              <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
+                <label className="form-label mb-0">Potong PPh (Withholding Tax) — Opsional</label>
+                <Select
+                  value={formData.withholding_type_id || 'none'}
+                  onValueChange={(v) => setFormData({ ...formData, withholding_type_id: v === 'none' ? '' : v })}
+                >
+                  <SelectTrigger className="input-field">
+                    <SelectValue placeholder="Tidak ada potongan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Tidak ada potongan</SelectItem>
+                    {whtTypes.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.name} ({(Number(w.rate) * 100).toFixed(2)}%)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formData.withholding_type_id && (() => {
+                  const w = whtTypes.find((x) => x.id === formData.withholding_type_id);
+                  const pot = w ? totalPayment * Number(w.rate) : 0;
+                  return (
+                    <div className="text-xs text-muted-foreground grid grid-cols-3 gap-2 pt-1">
+                      <div>Bruto: <strong>{formatCurrency(totalPayment)}</strong></div>
+                      <div>PPh dipotong: <strong className="text-warning">{formatCurrency(pot)}</strong></div>
+                      <div>Kas dibayar: <strong className="text-primary">{formatCurrency(totalPayment - pot)}</strong></div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
