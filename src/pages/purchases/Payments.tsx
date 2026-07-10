@@ -269,6 +269,8 @@ export const PurchasePayments: React.FC = () => {
       notes: '',
       currency_code: (selectedCompany as any)?.base_currency || 'IDR',
       exchange_rate: 1,
+      withholding_type_id: '',
+      withholding_amount: 0,
     });
     setBillAllocations([]);
     setTotalPayment(0);
