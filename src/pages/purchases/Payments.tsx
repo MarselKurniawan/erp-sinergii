@@ -423,6 +423,37 @@ export const PurchasePayments: React.FC = () => {
                 />
               </div>
 
+              <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
+                <label className="form-label mb-0">Potong PPh (Withholding Tax) — Opsional</label>
+                <Select
+                  value={formData.withholding_type_id || 'none'}
+                  onValueChange={(v) => setFormData({ ...formData, withholding_type_id: v === 'none' ? '' : v })}
+                >
+                  <SelectTrigger className="input-field">
+                    <SelectValue placeholder="Tidak ada potongan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Tidak ada potongan</SelectItem>
+                    {whtTypes.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.name} ({(Number(w.rate) * 100).toFixed(2)}%)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formData.withholding_type_id && (() => {
+                  const w = whtTypes.find((x) => x.id === formData.withholding_type_id);
+                  const pot = w ? totalPayment * Number(w.rate) : 0;
+                  return (
+                    <div className="text-xs text-muted-foreground grid grid-cols-3 gap-2 pt-1">
+                      <div>Bruto: <strong>{formatCurrency(totalPayment)}</strong></div>
+                      <div>PPh dipotong: <strong className="text-warning">{formatCurrency(pot)}</strong></div>
+                      <div>Kas dibayar: <strong className="text-primary">{formatCurrency(totalPayment - pot)}</strong></div>
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Notes</label>
