@@ -95,7 +95,22 @@ export const PurchasePayments: React.FC = () => {
     notes: '',
     currency_code: 'IDR',
     exchange_rate: 1,
+    withholding_type_id: '',
+    withholding_amount: 0,
   });
+
+  const [whtTypes, setWhtTypes] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!selectedCompany) return;
+    supabase
+      .from('withholding_tax_types' as any)
+      .select('*')
+      .eq('company_id', selectedCompany.id)
+      .eq('is_active', true)
+      .order('code')
+      .then(({ data }) => setWhtTypes((data as any) || []));
+  }, [selectedCompany?.id]);
 
   const [billAllocations, setBillAllocations] = useState<BillAllocation[]>([]);
   const [totalPayment, setTotalPayment] = useState(0);
