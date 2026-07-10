@@ -122,6 +122,7 @@ import ExpenseCategories from "./pages/expenses/ExpenseCategories";
 import RecurringTemplates from "./pages/recurring/RecurringTemplates";
 import SystemHealthCheck from "./pages/settings/SystemHealthCheck";
 import Currencies from "./pages/settings/Currencies";
+import WithholdingTax from "./pages/settings/WithholdingTax";
 import ApprovalCenter from "./pages/approvals/ApprovalCenter";
 
 const Guard = ({ f, children }: { f: string; children: React.ReactNode }) => (
